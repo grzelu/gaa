@@ -3,19 +3,23 @@ from geny import population
 import copy
 class GA(population):
     def __init__(self,*args,graph=None,canvas=None):
-        print ("DDDDDD")
         super(GA,self).__init__(*args)
         self._graph = graph
         self._canvas = canvas
-        self._currentPopulation_g=self._graph[0]
-        self._bestPopulation_g = self._graph[1]
+        self._currentPopulation_g = self._graph[0]
         self._currentPopulation_c=self._canvas[0]
         self._bestPopulation_c = self._canvas[1]
+        self._bestPopulation_g = self._graph[1]
+
+        self._BestFitness_c = self._canvas[3]
+        self._BestFitness_g = self._graph[3]
+
         self.calcFitness()
         self.theBest=None
     def startGA(self,n_iterations = 100):
-        print(self.pop)
+
         print("Start GA")
+        self.__fitnessScores = []
         for i in range(0,n_iterations):
             self.tournamentSelection()
             self.crossover()
@@ -23,19 +27,20 @@ class GA(population):
             self.calcFitness()
             if len(self._graph)>0:
                 self.graph()
-            #print (self.pop)
+
     def graph(self):
 
        # copyPop = copy.deepcopy(self)
         self.sortByFitness()
 
         best = self.pop[0]
-        print (self.theBest, best)
+        self.__fitnessScores.append(best.fitness)
+
         if self.theBest == None:
             self.theBest = self.pop[0]
         try:
            if self.theBest.fitness < best.fitness:
-               print("LEP{SZY")
+
                self.theBest = copy.deepcopy(self.pop[0])
                self._bestPopulation_g.clear()
                self._bestPopulation_g.plot([i.x for i in self.chromosome_list], [i.y for i in self.chromosome_list], 'ro')
@@ -62,17 +67,22 @@ class GA(population):
         self._currentPopulation_g.clear()
         self._currentPopulation_g.grid(True,alpha=0.2,linewidth=1, pickradius=5)
 
-        self._currentPopulation_g.set_title('Bierzaca populacja')
+        #self._BestFitness_g.clear()
+        self._BestFitness_g.set_title('Bierzaca populacja')
+        self._BestFitness_g.set_xlabel("Epoch")
+        self._BestFitness_g.set_ylabel("Fitness")
+
+        self._BestFitness_g.grid(True,alpha=0.2,linewidth=1, pickradius=5)
+        for c,i in list(enumerate(self.__fitnessScores)):
+            self._BestFitness_g.plot(c,i,'ro')
+        self._BestFitness_c.draw()
 
 
-        print (best)
         _x = [i.x for i in self.chromosome_list]
         _y = [i.y for i in self.chromosome_list]
         self._currentPopulation_g.plot(_x,_y, 'ro')
         for i in self.chromosome_list:
             self._currentPopulation_g.annotate(i.name, xy=(i.x, i.y), xytext = (i.x, i.y))
         for i in range(0,len(best.route)-1):
-            #print (best.route[i].x,best.route[i].y)
-
             self._currentPopulation_g.plot([best.route[i].x, best.route[i+1].x], [best.route[i].y, best.route[i+1].y])
-            self._currentPopulation_c.draw()
+        self._currentPopulation_c.draw()

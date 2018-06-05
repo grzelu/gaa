@@ -21,12 +21,22 @@ class guiApp():
         self.root.geometry("1166x700")
         self.root.wm_title("Genetic Algorythm")
 
-        self.fig1 = Figure(figsize=(7, 7), dpi=60)
-        self.fig2 = Figure(figsize=(7, 7), dpi=60)
-        self.upperSubplot = self.createSubplot(self.fig1,"Best of all")
-        self.bottomSubplot = self.createSubplot(self.fig2, "Best of current generation")
-        self.canvas1 = self.createCanvas(self.fig1,self.root,'LEFT')
-        self.canvas2 = self.createCanvas(self.fig2,self.root,'RIGHT')
+        self.leftFigure = Figure(figsize=(7, 7), dpi=60)
+        self.leftSubplot = self.createSubplot(self.leftFigure, "Best of all")
+        self.leftCanvas = self.createCanvas(self.leftFigure, self.root, 'LEFT')
+
+        self.rightFigure = Figure(figsize=(7, 7), dpi=60)
+        self.rightCanvas = self.createCanvas(self.rightFigure,self.root,'RIGHT')
+        self.rightSubplot = self.createSubplot(self.rightFigure, "Best of current generation")
+
+        self.botLeftFigure = Figure(figsize=(7, 5), dpi=60)
+        self.downLeftSubplot = self.createSubplot(self.botLeftFigure, "Best of current generation",axes=[0,100,0,100])
+        self.downLeftCanvas = self.createCanvas(self.botLeftFigure, self.root, 'TOP')
+
+        self.botRightFigure = Figure(figsize=(7, 5), dpi=60)
+        self.downRightSubplot = self.createSubplot(self.botRightFigure, "Best of current generation",axes=[0,100,0,100])
+        self.downRightCanvas = self.createCanvas(self.botRightFigure, self.root, 'BOTTOM')
+
         self.createButtons(self.root)
         self.__popSizeEntry = self.makeEntry(2,7,100,"Population size")
 #        #chromosome_list, population_size, route_size, crossover_probability, mutation_probability
@@ -47,19 +57,13 @@ class guiApp():
             canvas._tkcanvas.grid(row=0, column=3,columnspan=3, rowspan=10)
         elif side=='TOP':
             _side = Tk.TOP
-            canvas.get_tk_widget().grid(row=1, column=0,columnspan=3, rowspan=10)
-            canvas._tkcanvas.grid(row=1, column=0,columnspan=3, rowspan=10)
+            canvas.get_tk_widget().grid(row=100, column=0,columnspan=3, rowspan=10)
+            canvas._tkcanvas.grid(row=100, column=0,columnspan=3, rowspan=10)
         elif side=='BOTTOM':
             _side = Tk.BOTTOM
-            canvas.get_tk_widget().grid(row=1, column=3,columnspan=3, rowspan=100)
-            canvas._tkcanvas.grid(row=1, column=3,columnspan=3, rowspan=100)
+            canvas.get_tk_widget().grid(row=100, column=3,columnspan=3, rowspan=10)
+            canvas._tkcanvas.grid(row=100, column=3,columnspan=3, rowspan=10)
             _side = Tk.TOP
-       # canvas = FigureCanvasTkAgg(figure, master=master)
-       # canvas.draw()
-        #canvas.get_tk_widget().pack(side=_side, fill=Tk.NONE)
-       # canvas._tkcanvas.pack(side=_side, fill=Tk.NONE)
-        #canvas.get_tk_widget().grid(row=0)
-        #canvas._tkcanvas.grid(row=0)
 
 
         return canvas
@@ -71,15 +75,15 @@ class guiApp():
         entry.grid(row=row, column = column)
         entry.insert(0,value)
         return entry
-    def createSubplot(self, figure, title):
+    def createSubplot(self, figure, title, axes = [0, 800, 0, 800]):
         subplot = figure.add_subplot(111)
-        subplot.plot([0, 800, 0, 800], [0, 800, 0, 800], 'ro')
+        #subplot.plot([0, 800, 0, 800], [0, 800, 0, 800], 'ro')
         subplot.set_title(title)
         subplot.set_xlabel('X')
         subplot.set_ylabel('Y')
         subplot.grid(True)
-        subplot.set_xticks(np.arange(0, 800, 20))
-        subplot.set_yticks(np.arange(0, 800, 20))
+        subplot.set_xticks(np.arange(axes[0], axes[1], 20))
+        subplot.set_yticks(np.arange(axes[2], axes[3], 20))
         return subplot
     def createButtons(self,master):
         button = Tk.Button(master=master, text='Start', command=self.start)
@@ -102,12 +106,12 @@ class guiApp():
         route_size = int(self.__routeSizeEntry.get())
 
 
-        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.upperSubplot,self.bottomSubplot],canvas=[self.canvas1,self.canvas2])
+        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
         print (self._GA)
         self.new_thread = threading.Thread(target=self.updateGraph)
         self.new_thread.start()
         print (self.new_thread)
-        #self.new_thread = threading.Thread(target=self.updateGraph, kwargs={"ga": self._GA, "canvas": self.canvas1})
+        #self.new_thread = threading.Thread(target=self.updateGraph, kwargs={"ga": self._GA, "canvas": self.leftCanvas})
     def updateGraph(self):
         #self.new_thread = threading.currentThread()
         print("updateGraph")
