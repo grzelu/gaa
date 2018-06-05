@@ -1,5 +1,5 @@
 from geny import population
-
+import numpy as np
 import copy
 class GA(population):
     def __init__(self,*args,graph=None,canvas=None):
@@ -14,27 +14,40 @@ class GA(population):
         self._BestFitness_c = self._canvas[3]
         self._BestFitness_g = self._graph[3]
 
+        ##self._MeanFitness_c = self._canvas[4]
+        #self._MeanFitness_g = self._graph[4]
+
         self.calcFitness()
         self.theBest=None
     def startGA(self,n_iterations = 100):
 
         print("Start GA")
         self.__fitnessScores = []
+        self.__MeanfitnessScores = []
+        self.__worstFitnessScores= []
+        #fit = []
         for i in range(0,n_iterations):
             self.tournamentSelection()
             self.crossover()
             self.mutation()
             self.calcFitness()
+            fit = []
+            for y in self.pop:
+                fit.append(y.fitness)
+            self.__MeanfitnessScores.append(np.mean(fit))
+            #print (self.__MeanfitnessScores)
             if len(self._graph)>0:
-                self.graph()
+                self.graph(i)
 
-    def graph(self):
-
+    def graph(self,c=0):
+        c+=1
        # copyPop = copy.deepcopy(self)
         self.sortByFitness()
 
         best = self.pop[0]
+        worst = self.pop[-1]
         self.__fitnessScores.append(best.fitness)
+        self.__worstFitnessScores.append(worst.fitness)
 
         if self.theBest == None:
             self.theBest = self.pop[0]
@@ -54,8 +67,8 @@ class GA(population):
                    # print (best.route[i].x,best.route[i].y)
 
                    self._bestPopulation_g.plot([self.theBest.route[i].x, self.theBest.route[i + 1].x],
-                                                  [self.theBest.route[i].y, self.theBest.route[i + 1].y])
-                   self._bestPopulation_c.draw()
+                                                  [self.theBest.route[i].y, self.theBest.route[i + 1].y],'g')
+               self._bestPopulation_c.draw()
         except IndexError:
             self.theBest = best
 
@@ -73,10 +86,20 @@ class GA(population):
         self._BestFitness_g.set_ylabel("Fitness")
 
         self._BestFitness_g.grid(True,alpha=0.2,linewidth=1, pickradius=5)
-        for c,i in list(enumerate(self.__fitnessScores)):
-            self._BestFitness_g.plot(c,i,'ro')
+        #for c,i in list(enumerate(self.__fitnessScores)):
+        #    self._BestFitness_g.plot(c,i,'ro')
+        #for c,i in list(enumerate(self.__MeanfitnessScores)):
+        #    self._BestFitness_g.plot(c, i, 'go')
+        #for c,i in list(enumerate(self.__worstFitnessScores)):
+        #    self._BestFitness_g.plot(c, i, 'bo')
+        #    self._BestFitness_g.plot(c,len(self.pop),'y')
+        #self._BestFitness_c.draw()
+        self._BestFitness_g.plot(c, self.__fitnessScores[-1], 'ro')
+        self._BestFitness_g.plot(c, self.__MeanfitnessScores[-1], 'bo')
+        self._BestFitness_g.plot(c, self.__worstFitnessScores[-1], 'yo')
+        #print(len(self.pop))
+        #self._BestFitness_g.plot(c, len(self.pop), 'g-')
         self._BestFitness_c.draw()
-
 
         _x = [i.x for i in self.chromosome_list]
         _y = [i.y for i in self.chromosome_list]
@@ -84,5 +107,6 @@ class GA(population):
         for i in self.chromosome_list:
             self._currentPopulation_g.annotate(i.name, xy=(i.x, i.y), xytext = (i.x, i.y))
         for i in range(0,len(best.route)-1):
-            self._currentPopulation_g.plot([best.route[i].x, best.route[i+1].x], [best.route[i].y, best.route[i+1].y])
+            self._currentPopulation_g.plot([best.route[i].x, best.route[i+1].x], [best.route[i].y, best.route[i+1].y],'g')
+            self._currentPopulation_g.plot([worst.route[i].x, worst.route[i + 1].x], [worst.route[i].y, worst.route[i + 1].y], 'r')
         self._currentPopulation_c.draw()
