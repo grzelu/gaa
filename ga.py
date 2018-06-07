@@ -1,11 +1,13 @@
 from geny import population
+from populationwindow import populationListWindow
 import numpy as np
-import copy
+import copy, threading
 class GA(population):
-    def __init__(self,*args,graph=None,canvas=None):
+    def __init__(self,*args,graph=None,canvas=None,populationwindow=None):
         super(GA,self).__init__(*args)
         self._graph = graph
         self._canvas = canvas
+
         self._currentPopulation_g = self._graph[0]
         self._currentPopulation_c=self._canvas[0]
         self._bestPopulation_c = self._canvas[1]
@@ -13,30 +15,43 @@ class GA(population):
 
         self._BestFitness_c = self._canvas[3]
         self._BestFitness_g = self._graph[3]
-
+        self.populationwindow = populationwindow
+        print (self.populationwindow)
         ##self._MeanFitness_c = self._canvas[4]
         #self._MeanFitness_g = self._graph[4]
 
         self.calcFitness()
         self.theBest=None
-    def startGA(self,n_iterations = 100):
 
+    def makePopulationLabelText(self):
+        text=""
+        for i in self.pop:
+            text = text + str(i) + "\n"
+        self.populationwindow.config(text=text)
+    def startGA(self,n_iterations = 100):
+       # self._popwindow = populationListWindow()
+       # self.popwindow = threading.Thread(target=self._popwindow.windowRUN)
+       # self.popwindow.start()
         print("Start GA")
+        print(self.pop)
         self.__fitnessScores = []
         self.__MeanfitnessScores = []
         self.__worstFitnessScores= []
         #fit = []
         for i in range(0,n_iterations):
+            self.makePopulationLabelText()
             self.tournamentSelection()
             #self.selection_BestHalf()
             self.crossover()
             self.mutation()
             self.calcFitness()
+            self.makePopulationLabelText()
             fit = []
             for y in self.pop:
-                fit.append(y.fitness)
+                #print(y)
+                fit.append(round(y.fitness,3))
             self.__MeanfitnessScores.append(np.mean(fit))
-            #print (self.__MeanfitnessScores)
+            print (self.__MeanfitnessScores)
             if len(self._graph)>0:
                 self.graph(i)
 
@@ -111,3 +126,5 @@ class GA(population):
             self._currentPopulation_g.plot([best.route[i].x, best.route[i+1].x], [best.route[i].y, best.route[i+1].y],'g')
             self._currentPopulation_g.plot([worst.route[i].x, worst.route[i + 1].x], [worst.route[i].y, worst.route[i + 1].y], 'r')
         self._currentPopulation_c.draw()
+
+

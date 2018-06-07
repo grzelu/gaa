@@ -19,13 +19,14 @@ else:
 class guiApp():
     def __init__(self):
         self.root = Tk.Tk()
-        self.root.geometry("1166x700")
+        self.root.geometry("1466x700")
         self.root.wm_title("Genetic Algorythm")
-
+        self.frame = Tk.Frame(self.root, bg='cyan', width=450, height=600, pady=3)
+        self.frame.grid(column=10,row=0, sticky="ew",rowspan=10)
         self.leftFigure = Figure(figsize=(7, 7), dpi=60)
         self.leftSubplot = self.createSubplot(self.leftFigure, "Best of all")
         self.leftCanvas = self.createCanvas(self.leftFigure, self.root, 'LEFT')
-
+        self.root.grid_rowconfigure(1, weight=1)
         self.rightFigure = Figure(figsize=(7, 7), dpi=60)
         self.rightCanvas = self.createCanvas(self.rightFigure,self.root,'RIGHT')
         self.rightSubplot = self.createSubplot(self.rightFigure, "Best of current generation")
@@ -39,16 +40,38 @@ class guiApp():
         self.downRightCanvas = self.createCanvas(self.botRightFigure, self.root, 'BOTTOM')
 
         self.createButtons(self.root)
-        self.__popSizeEntry = self.makeEntry(2,7,100,"Population size")
+        self.__popSizeEntry = self.makeEntry(2,7,10,"Population size")
 #        #chromosome_list, population_size, route_size, crossover_probability, mutation_probability
-        self.__routeSizeEntry = self.makeEntry(3,7,6,"Route size")
+        self.__routeSizeEntry = self.makeEntry(3,7,11,"Route size")
         self.__crossoverProbabilityEntry = self.makeEntry(4,7,0.8,"Crossover probability")
         self.__mutationProbabilityEntry = self.makeEntry(5,7,0.08,"Mutation probability")
-        self.__iterations = self.makeEntry(6, 7, 100, "Iterations")
+        self.__iterations = self.makeEntry(6, 7, 5, "Iterations")
         self.__instantions = self.makeEntry(7, 7, 1, "number of runs")
+        #self.window = Tk.Toplevel(self.root)
+        self.LabelWindowPopulation = Tk.Label(self.frame, text='your text',fg='blue')
+        self.LabelWindowPopulation.grid(row=0,column=0,rowspan=100)
     def createCanvas(self,figure,master,side):
         canvas = FigureCanvasTkAgg(figure, master=master)
         canvas.draw()
+     #   if side=='LEFT':
+     #       _side = Tk.LEFT
+     #       canvas.get_tk_widget().grid(row=0,column=0,columnspan=3, rowspan=10)
+     #       canvas._tkcanvas.grid(row=0,column=0,columnspan=3, rowspan=10)
+     #   elif side=='RIGHT':
+     #       _side = Tk.RIGHT
+     #       canvas.get_tk_widget().grid(row=0, column=3,columnspan=3, rowspan=10)
+     #       canvas._tkcanvas.grid(row=0, column=3,columnspan=3, rowspan=10)
+     #   elif side=='TOP':
+     #       _side = Tk.TOP
+     #       canvas.get_tk_widget().grid(row=10, column=0,columnspan=3, rowspan=10)
+     #       canvas._tkcanvas.grid(row=10, column=0,columnspan=3, rowspan=10)
+    #   elif side=='BOTTOM':
+    #        _side = Tk.BOTTOM
+    #        canvas.get_tk_widget().grid(row=10, column=3,columnspan=3, rowspan=10)
+    #        canvas._tkcanvas.grid(row=10, column=3,columnspan=3, rowspan=10)
+         #   _side = Tk.TOP
+
+
         if side=='LEFT':
             _side = Tk.LEFT
             canvas.get_tk_widget().grid(row=0,column=0,columnspan=3, rowspan=10)
@@ -59,18 +82,18 @@ class guiApp():
             canvas._tkcanvas.grid(row=0, column=3,columnspan=3, rowspan=10)
         elif side=='TOP':
             _side = Tk.TOP
-            canvas.get_tk_widget().grid(row=100, column=0,columnspan=3, rowspan=10)
-            canvas._tkcanvas.grid(row=100, column=0,columnspan=3, rowspan=10)
+            canvas.get_tk_widget().grid(row=10, column=0,columnspan=3, rowspan=10)
+            canvas._tkcanvas.grid(row=10, column=0,columnspan=3, rowspan=10)
         elif side=='BOTTOM':
             _side = Tk.BOTTOM
-            canvas.get_tk_widget().grid(row=100, column=3,columnspan=3, rowspan=10)
-            canvas._tkcanvas.grid(row=100, column=3,columnspan=3, rowspan=10)
+            canvas.get_tk_widget().grid(row=10, column=3,columnspan=3, rowspan=10)
+            canvas._tkcanvas.grid(row=10, column=3,columnspan=3, rowspan=10)
             _side = Tk.TOP
-
 
         return canvas
     def makeEntry(self, row,column,value,text):
         label = Tk.Label(self.root,text = text)
+       # label = 'xdddd'
         label.grid(row=row,column=column-1)
        # e=Tk.simpledialog.askstring("File: ","Enter your file name")
         entry = Tk.Entry(self.root, width=20)
@@ -107,13 +130,16 @@ class guiApp():
         population_size = int(self.__popSizeEntry.get())
         route_size = int(self.__routeSizeEntry.get())
 
+        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas,],populationwindow =  self.LabelWindowPopulation)
 
-        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
+        #self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
         print (self._GA)
+        print ("KURWA")
+        print (self.LabelWindowPopulation)
         for i in range(0,int(self.__instantions.get())-1):
             x = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
                           graph=[self.leftSubplot, self.rightSubplot, self.downRightSubplot, self.downLeftSubplot],
-                          canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
+                          canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas],populationwindow =  self.LabelWindowPopulation)
 
             self.i = threading.Thread(target=self.updateGraph, args=(x,))
             self.i.start()
@@ -126,5 +152,6 @@ class guiApp():
         print("updateGraph")
         #new_thread = threading.currentThread()
         thr.startGA(n_iterations = int(self.__iterations.get()))
+
     def quit(self):
         pass
