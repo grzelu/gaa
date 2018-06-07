@@ -28,6 +28,7 @@ class GA(population):
         #fit = []
         for i in range(0,n_iterations):
             self.tournamentSelection()
+            #self.selection_BestHalf()
             self.crossover()
             self.mutation()
             self.calcFitness()

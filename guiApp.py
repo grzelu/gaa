@@ -3,6 +3,7 @@ from ga import GA
 from variables import *
 from queue import Queue
 matplotlib.use('TkAgg')
+import copy
 
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -41,9 +42,10 @@ class guiApp():
         self.__popSizeEntry = self.makeEntry(2,7,100,"Population size")
 #        #chromosome_list, population_size, route_size, crossover_probability, mutation_probability
         self.__routeSizeEntry = self.makeEntry(3,7,6,"Route size")
-        self.__crossoverProbabilityEntry = self.makeEntry(4,7,0.008,"Crossover probability")
-        self.__mutationProbabilityEntry = self.makeEntry(5,7,0.00008,"Mutation probability")
+        self.__crossoverProbabilityEntry = self.makeEntry(4,7,0.8,"Crossover probability")
+        self.__mutationProbabilityEntry = self.makeEntry(5,7,0.08,"Mutation probability")
         self.__iterations = self.makeEntry(6, 7, 100, "Iterations")
+        self.__instantions = self.makeEntry(7, 7, 1, "number of runs")
     def createCanvas(self,figure,master,side):
         canvas = FigureCanvasTkAgg(figure, master=master)
         canvas.draw()
@@ -108,14 +110,21 @@ class guiApp():
 
         self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
         print (self._GA)
-        self.new_thread = threading.Thread(target=self.updateGraph)
+        for i in range(0,int(self.__instantions.get())-1):
+            x = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
+                          graph=[self.leftSubplot, self.rightSubplot, self.downRightSubplot, self.downLeftSubplot],
+                          canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
+
+            self.i = threading.Thread(target=self.updateGraph, args=(x,))
+            self.i.start()
+        self.new_thread = threading.Thread(target=self.updateGraph, args=(self._GA,))
         self.new_thread.start()
         print (self.new_thread)
         #self.new_thread = threading.Thread(target=self.updateGraph, kwargs={"ga": self._GA, "canvas": self.leftCanvas})
-    def updateGraph(self):
+    def updateGraph(self,thr):
         #self.new_thread = threading.currentThread()
         print("updateGraph")
-        new_thread = threading.currentThread()
-        self._GA.startGA(n_iterations = int(self.__iterations.get()))
+        #new_thread = threading.currentThread()
+        thr.startGA(n_iterations = int(self.__iterations.get()))
     def quit(self):
         pass

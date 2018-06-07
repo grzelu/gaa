@@ -2,7 +2,7 @@ import numpy as np
 import random
 import copy
 data_path = "DANE.txt"
-data_matrix = np.loadtxt(data_path,skiprows=13)
+data_matrix = np.loadtxt(data_path,skiprows=25)
 flow_matrix = data_matrix
 #print (flow_matrix)
 
@@ -82,6 +82,7 @@ class population(list):
         [self.pop.append(route(route_size, chromosome_list)) for i in range(0, populationSize)]
         self.selected=[]
     def calcFitness(self):
+        print("CALCULATE FITNESS")
         [i.calcFitness() for i in self.pop]
     def normalizeFitness(self):
         allFitness = 0
@@ -95,6 +96,7 @@ class population(list):
     def sortByFitness(self):
         self.pop.sort(key=lambda x: x.fitness, reverse=False)
     def mutation(self):
+        print("MUTATION")
         mutate = []
         mutation_method = ['swapPosition', 'changeOne']
         #mutation_method = ['swapPosition','changeOne','changeMore']
@@ -134,7 +136,19 @@ class population(list):
                 #print (valuesToChange)
 
 
+    def selection_BestHalf(self):
+        self.sortByFitness()
+        popsize = len(self.pop)
+        halfpop= int(popsize/2)
+        self.choosen = self.pop[:halfpop]
+        self.notChoosen = self.pop[halfpop:]
+        #for i in self.choosen:
+        #    print ('chosen',i.fitness)
+        #for i in self.notChoosen:
+        #    print ('notchosen',i.fitness)
+
     def tournamentSelection(self):
+        print ("Tournament selection")
         #temp  = copy.deepcopy(self.pop)
         self.notChoosen=[]
         random.shuffle(temp)
@@ -143,10 +157,13 @@ class population(list):
         while len(self.pop)>1:
             ch1 = self.pop.pop()
             ch2 = self.pop.pop()
+            print (ch1.fitness,"VS", ch2.fitness)
             if ch1.fitness < ch2.fitness:
+                #print ('win',ch1.fitness)
                 self.choosen.append(ch1)
                 self.notChoosen.append(ch2)
             else:
+                #print('win', ch2.fitness)
                 self.choosen.append(ch2)
                 self.notChoosen.append(ch1)
         #while len(choosen)>1:
@@ -156,11 +173,15 @@ class population(list):
         #        final.append(ch1)
         #    else:
         #        final.append(ch2)
-        #print (final,len(final))
+        print (final,len(self.notChoosen))
         self.notChoosen.sort(key=lambda x: x.fitness, reverse=False)
+        for i in self.notChoosen:
+            print (i.fitness)
+
         return self.choosen
 
     def crossover(self):
+
         #print ("Choosen/NotChoosen: {}/{}".format(len(self.choosen),len(self.notChoosen)))
         new_population=[]
         for i in self.choosen:
@@ -171,6 +192,7 @@ class population(list):
         counter=0
         len_choosen = len(self.choosen)
         while len(self.choosen)>2:
+            #print("CROSSOVER")
             #print (counter)
             counter+=1
             try:
@@ -197,7 +219,7 @@ class population(list):
             new_population.append(ch2)
         #new_population.extend(self.choosen)
         #new_population.extend(self.notChoosen)
-       # print ("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen),len(self.notChoosen),len(new_population)))
+        print ("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen),len(self.notChoosen),len(new_population)))
         while self.populationSize>len(new_population):
            # print("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen), len(self.notChoosen),
            #                                                       len(new_population)))
