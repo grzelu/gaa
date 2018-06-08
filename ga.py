@@ -1,10 +1,11 @@
 from geny import population
+import time
 from populationwindow import populationListWindow
 import numpy as np
 import copy, threading
 class GA(population):
-    def __init__(self,*args,graph=None,canvas=None,populationwindow=None):
-        super(GA,self).__init__(*args)
+    def __init__(self,*args,graph=None,canvas=None,windows=None,test="TEST",randomPopulation):
+        super(GA,self).__init__(*args,randomPopulation,test)
         self._graph = graph
         self._canvas = canvas
 
@@ -15,32 +16,41 @@ class GA(population):
 
         self._BestFitness_c = self._canvas[3]
         self._BestFitness_g = self._graph[3]
-        self.populationwindow = populationwindow
-        print (self.populationwindow)
+        self.populationwindow = windows[0]
+        self.fistpopulationwindow = windows[1]
+        #print (self.populationwindow)
         ##self._MeanFitness_c = self._canvas[4]
         #self._MeanFitness_g = self._graph[4]
 
         self.calcFitness()
         self.theBest=None
 
-    def makePopulationLabelText(self):
+    def makePopulationLabelText(self,firstgeneration=False):
         text=""
+
+
         for i in self.pop:
             text = text + str(i) + "\n"
-        self.populationwindow.config(text=text)
+        if firstgeneration == False:
+            self.populationwindow.config(text=text)
+        elif firstgeneration==True:
+            self.fistpopulationwindow.config(text=text)
     def startGA(self,n_iterations = 100):
        # self._popwindow = populationListWindow()
        # self.popwindow = threading.Thread(target=self._popwindow.windowRUN)
        # self.popwindow.start()
         print("Start GA")
         print(self.pop)
+
+        self.makePopulationLabelText(firstgeneration=True)
         self.__fitnessScores = []
         self.__MeanfitnessScores = []
         self.__worstFitnessScores= []
         #fit = []
         for i in range(0,n_iterations):
+            time.sleep(0.1)
             self.makePopulationLabelText()
-            self.tournamentSelection()
+            self.tournamentSelection
             #self.selection_BestHalf()
             self.crossover()
             self.mutation()
@@ -51,9 +61,25 @@ class GA(population):
                 #print(y)
                 fit.append(round(y.fitness,3))
             self.__MeanfitnessScores.append(np.mean(fit))
-            print (self.__MeanfitnessScores)
+            #print (self.__MeanfitnessScores)
             if len(self._graph)>0:
                 self.graph(i)
+    def drawBest(self):
+        self._bestPopulation_g.clear()
+        self._bestPopulation_g.plot([i.x for i in self.chromosome_list], [i.y for i in self.chromosome_list], 'ro')
+        best = self.pop[0]
+        worst = self.pop[-1]
+        for i in self.chromosome_list:
+            self._bestPopulation_g.annotate(i.name, xy=(i.x, i.y), xytext=(i.x, i.y))
+        self._bestPopulation_g.set_xlabel("X")
+        self._bestPopulation_g.set_ylabel("Y")
+        self._bestPopulation_g.grid(True, alpha=0.2, linewidth=1, pickradius=5)
+        for i in range(0, len(self.theBest.route) - 1):
+            print(best.route[i].x, best.route[i].y)
+
+            self._bestPopulation_g.plot([self.theBest.route[i].x, self.theBest.route[i + 1].x],
+                                        [self.theBest.route[i].y, self.theBest.route[i + 1].y], 'g')
+        self._bestPopulation_c.draw()
 
     def graph(self,c=0):
         c+=1
@@ -71,20 +97,7 @@ class GA(population):
            if self.theBest.fitness < best.fitness:
 
                self.theBest = copy.deepcopy(self.pop[0])
-               self._bestPopulation_g.clear()
-               self._bestPopulation_g.plot([i.x for i in self.chromosome_list], [i.y for i in self.chromosome_list], 'ro')
-
-               for i in self.chromosome_list:
-                   self._bestPopulation_g.annotate(i.name, xy=(i.x, i.y), xytext=(i.x, i.y))
-               self._bestPopulation_g.set_xlabel("X")
-               self._bestPopulation_g.set_ylabel("Y")
-               self._bestPopulation_g.grid(True, alpha=0.2, linewidth=1, pickradius=5)
-               for i in range(0, len(self.theBest.route) - 1):
-                   # print (best.route[i].x,best.route[i].y)
-
-                   self._bestPopulation_g.plot([self.theBest.route[i].x, self.theBest.route[i + 1].x],
-                                                  [self.theBest.route[i].y, self.theBest.route[i + 1].y],'g')
-               self._bestPopulation_c.draw()
+               self.drawBest()
         except IndexError:
             self.theBest = best
 
@@ -96,25 +109,14 @@ class GA(population):
         self._currentPopulation_g.clear()
         self._currentPopulation_g.grid(True,alpha=0.2,linewidth=1, pickradius=5)
 
-        #self._BestFitness_g.clear()
+
         self._BestFitness_g.set_title('Bierzaca populacja')
         self._BestFitness_g.set_xlabel("Epoch")
         self._BestFitness_g.set_ylabel("Fitness")
-
         self._BestFitness_g.grid(True,alpha=0.2,linewidth=1, pickradius=5)
-        #for c,i in list(enumerate(self.__fitnessScores)):
-        #    self._BestFitness_g.plot(c,i,'ro')
-        #for c,i in list(enumerate(self.__MeanfitnessScores)):
-        #    self._BestFitness_g.plot(c, i, 'go')
-        #for c,i in list(enumerate(self.__worstFitnessScores)):
-        #    self._BestFitness_g.plot(c, i, 'bo')
-        #    self._BestFitness_g.plot(c,len(self.pop),'y')
-        #self._BestFitness_c.draw()
         self._BestFitness_g.plot(c, self.__fitnessScores[-1], 'ro')
         self._BestFitness_g.plot(c, self.__MeanfitnessScores[-1], 'bo')
         self._BestFitness_g.plot(c, self.__worstFitnessScores[-1], 'yo')
-        #print(len(self.pop))
-        #self._BestFitness_g.plot(c, len(self.pop), 'g-')
         self._BestFitness_c.draw()
 
         _x = [i.x for i in self.chromosome_list]

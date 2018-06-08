@@ -50,26 +50,19 @@ class guiApp():
         #self.window = Tk.Toplevel(self.root)
         self.LabelWindowPopulation = Tk.Label(self.frame, text='your text',fg='blue')
         self.LabelWindowPopulation.grid(row=0,column=0,rowspan=100)
+        self.LabelWindowFirstPopulation = Tk.Label(self.frame, text='first population',fg='red')
+        self.LabelWindowFirstPopulation.grid(row=0,column=1,rowspan=100)
+        self.var = Tk.IntVar()
+        self.generateRandom = Tk.Checkbutton(self.root, text="Generate random", variable= self.var,command=self.cb)
+        self.generateRandom.grid(row=8, column=7)
+        self.randomPopulation=False
+    def cb(self):
+
+        self.randomPopulation = self.var.get()
+        #print(self.randomPopulation)
     def createCanvas(self,figure,master,side):
         canvas = FigureCanvasTkAgg(figure, master=master)
         canvas.draw()
-     #   if side=='LEFT':
-     #       _side = Tk.LEFT
-     #       canvas.get_tk_widget().grid(row=0,column=0,columnspan=3, rowspan=10)
-     #       canvas._tkcanvas.grid(row=0,column=0,columnspan=3, rowspan=10)
-     #   elif side=='RIGHT':
-     #       _side = Tk.RIGHT
-     #       canvas.get_tk_widget().grid(row=0, column=3,columnspan=3, rowspan=10)
-     #       canvas._tkcanvas.grid(row=0, column=3,columnspan=3, rowspan=10)
-     #   elif side=='TOP':
-     #       _side = Tk.TOP
-     #       canvas.get_tk_widget().grid(row=10, column=0,columnspan=3, rowspan=10)
-     #       canvas._tkcanvas.grid(row=10, column=0,columnspan=3, rowspan=10)
-    #   elif side=='BOTTOM':
-    #        _side = Tk.BOTTOM
-    #        canvas.get_tk_widget().grid(row=10, column=3,columnspan=3, rowspan=10)
-    #        canvas._tkcanvas.grid(row=10, column=3,columnspan=3, rowspan=10)
-         #   _side = Tk.TOP
 
 
         if side=='LEFT':
@@ -124,33 +117,37 @@ class guiApp():
         Tk.mainloop()
 
     def start(self):
-        print ("XD")
         crossover_probability = float(self.__crossoverProbabilityEntry.get())
         mutation_probability = float(self.__mutationProbabilityEntry.get())
         population_size = int(self.__popSizeEntry.get())
         route_size = int(self.__routeSizeEntry.get())
 
-        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas,],populationwindow =  self.LabelWindowPopulation)
+        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
+                      test="TEST",
+                      randomPopulation=self.randomPopulation,
+                      graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],
+                      canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas,],
+                      windows =  [self.LabelWindowPopulation,self.LabelWindowFirstPopulation]
+                      )
 
         #self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability, graph=[self.leftSubplot,self.rightSubplot,self.downRightSubplot, self.downLeftSubplot],canvas=[self.leftCanvas,self.rightCanvas, self.downRightCanvas, self.downLeftCanvas])
         print (self._GA)
-        print ("KURWA")
-        print (self.LabelWindowPopulation)
+        threads = 0
         for i in range(0,int(self.__instantions.get())-1):
             x = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                          graph=[self.leftSubplot, self.rightSubplot, self.downRightSubplot, self.downLeftSubplot],
-                          canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas],populationwindow =  self.LabelWindowPopulation)
+                   randomPopulation=self.randomPopulation,
+                   graph=[self.leftSubplot, self.rightSubplot, self.downRightSubplot, self.downLeftSubplot],
+                   canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas],
+                   windows =  [self.LabelWindowPopulation,self.LabelWindowFirstPopulation]
+                   )
 
             self.i = threading.Thread(target=self.updateGraph, args=(x,))
+            threads+=1
             self.i.start()
         self.new_thread = threading.Thread(target=self.updateGraph, args=(self._GA,))
         self.new_thread.start()
-        print (self.new_thread)
-        #self.new_thread = threading.Thread(target=self.updateGraph, kwargs={"ga": self._GA, "canvas": self.leftCanvas})
+        print ("Number of threads: {}".format(threads))
     def updateGraph(self,thr):
-        #self.new_thread = threading.currentThread()
-        print("updateGraph")
-        #new_thread = threading.currentThread()
         thr.startGA(n_iterations = int(self.__iterations.get()))
 
     def quit(self):
