@@ -80,7 +80,7 @@ class route:
             #print ("Time: {} = Dist: {} / Speed: {}".format(time,dst,vmax))
             self.fitness+=time
         #print (dist,'/' ,totaltime,"=",dist/totaltime,self.fitness)
-        self.fitness = self.fitness*(dist/totaltime)
+        self.fitness = self.fitness*+dist-vmaxall
 
 
     def __str__(self):
@@ -104,6 +104,10 @@ class population(list):
         self.mutation_probability = mutation_probability
         self.chromosome_list = chromosome_list
         self.pop=[]
+
+
+
+
         [self.pop.append(route(route_size, chromosome_list,randomPopulation,counter=self.counter)) for i in range(0, populationSize)]
 
         self.selected=[]
@@ -119,7 +123,7 @@ class population(list):
         for i in xx:
             npop.append(i)
         self.pop= npop
-        print ("REMOVED {} duplacates".format(lenpop-lenset))
+        #print ("REMOVED {} duplacates".format(lenpop-lenset))
     def normalizeFitness(self):
         allFitness = 0
         n_fit = 0
@@ -249,32 +253,23 @@ class population(list):
 
 
 
-    def tournamentSelection2(self,tournamentsize=3, numberToSelect=5,choosen=[]):
+    def tournamentSelection2(self,tournamentsize=5, numberToSelect=50,choosen=[]):
         x= self.pop
         tournamentMembers = []
+        #print (">>>>>>>>>>>>>>>>>>>>>>>>>>>",tournamentsize, numberToSelect)
         if numberToSelect == 0:
-            print ("WYCHODZE")
+            print(len(self.pop), len(choosen))
             self.choosen = choosen
             self.pop = self.pop + self.choosen
-            print (self.choosen)
-            #self.notChoosen = list(set(self.pop)^set(self.choosen))
-            self.notChoosen = self.pop
-
-            print(len(self.pop),len(self.choosen),len(self.notChoosen))
             return self.choosen
         for i in range(0,tournamentsize):
             member = self.pop[random.randint(0,len(self.pop)-1)]
             tournamentMembers.append(member)
-        #print (tournamentMembers)
+
         best,rest = self.trnSelect(tournamentMembers)
-        #print ("Before",len(self.pop))
+
         self.pop.remove(best)
-        #print("After", len(self.pop))
-        #for _rest in rest:
-        #    if _rest not in self.pop:
-        #        self.pop.append(_rest)
-        #    else:
-        #        print ("REST JZU JEST")
+
         if best in self.pop:
             print ("TO JUZ JEST!!!")
             return
@@ -294,26 +289,35 @@ class population(list):
         for i in self.choosen:
             x=random.uniform(0,1)
             if float(self.crossover_probability) < x:
-                print ('TO CROSSOVER',x)
-                self.pop.append(self.choosen.pop())
+                #print ('TO CROSSOVER',x)
+                #self.pop.append(self.choosen.pop())
+                new_population.append(self.choosen.pop())
         #random.shuffle(self.choosen)
        # print("Choosen/NotChoosen: {}/{}".format(len(self.choosen), len(self.notChoosen)))
         counter=0
         len_choosen = len(self.choosen)
+        print("ilosc wybranych drog do mutacji: ",len_choosen)
+        print("0Population/NewPopulation/choosen {}/{}/{}".format(len(self.pop), len(new_population), len(self.choosen)))
+
+
         while len(self.choosen)>2:
             #print("CROSSOVER")
             #print (counter)
-            counter+=1
+            #counter+=1
+            #print (counter)
             try:
                 ch1 = copy.deepcopy(self.choosen[counter])
                 ch2 = copy.deepcopy(self.choosen[counter+1]) ## SPRAWDZIC
+               # print ("CH1: {} | CH2: {}".format(self.choosen[counter],self.choosen[counter+1]))
             except IndexError:
                 if ch1:
-                    new_population.append(ch1)
+                    print ("INDEX ERROR",ch1,len_choosen,counter)
+
+                    #new_population.append(ch1)
                     break
                 else:
                     break
-            counter+=1
+            counter+=2
 
             #print(counter)
             crossPoints = random.sample(range(1, self.route_size - 1), random.randint(0, self.route_size - 2))
@@ -324,27 +328,16 @@ class population(list):
                         status=0
                 if status == 1:
                     ch1.route[i] = ch2.route[i]
+            ch1.calcFitness()
+            #print("CH1: {} | CH2: {}".format(ch1, ch2))
             new_population.append(ch1)
-            new_population.append(ch2)
-        #new_population.extend(self.choosen)
-        #new_population.extend(self.notChoosen)
-        #print ("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen),len(self.notChoosen),len(new_population)))
-        #print ("123123",self.pop)
+
+
+        self.pop.extend(new_population)
+        self.pop.extend(self.choosen)
+        #new_population.extend(self.pop[-(self.populationSize - len(new_population)):])
+        #self.pop=new_population
         self.sortByFitness()
-        #print("333323", self.pop)
-        while self.populationSize>len(new_population):
-           # print("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen), len(self.notChoosen),
-           #                                                       len(new_population)))
-            try:
-                xxx=self.choosen.pop()
-            except IndexError:
-                print ("koniec")
-                self.pop = self.pop + new_population
-                self.removeDuplicates()
-                return
-            new_population.append(xxx)
-
-        self.pop = new_population
-
-        #print("New Population: {}".format(len(new_population)))
+        self.removeDuplicates()
+        self.pop = self.pop[:self.populationSize]
 
