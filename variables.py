@@ -5,7 +5,7 @@ route_size = 8
 crossover_probability = 0.8
 mutation_probability = 0.008
 data_path = "DANE.txt"
-data_matrix = np.loadtxt(data_path,skiprows=13)
+data_matrix = np.loadtxt(data_path,skiprows=25)
 flow_matrix = data_matrix
 #print (flow_matrix)
 
