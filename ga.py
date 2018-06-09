@@ -50,9 +50,11 @@ class GA(population):
         for i in range(0,n_iterations):
             time.sleep(0.1)
             self.makePopulationLabelText()
-            self.tournamentSelection
+            self.tournamentSelection2()
             #self.selection_BestHalf()
+            self.removeDuplicates()
             self.crossover()
+            self.removeDuplicates()
             self.mutation()
             self.calcFitness()
             self.makePopulationLabelText()
@@ -75,7 +77,7 @@ class GA(population):
         self._bestPopulation_g.set_ylabel("Y")
         self._bestPopulation_g.grid(True, alpha=0.2, linewidth=1, pickradius=5)
         for i in range(0, len(self.theBest.route) - 1):
-            print(best.route[i].x, best.route[i].y)
+            #print(best.route[i].x, best.route[i].y)
 
             self._bestPopulation_g.plot([self.theBest.route[i].x, self.theBest.route[i + 1].x],
                                         [self.theBest.route[i].y, self.theBest.route[i + 1].y], 'g')

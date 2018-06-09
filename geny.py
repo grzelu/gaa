@@ -110,6 +110,16 @@ class population(list):
     def calcFitness(self):
        # print("CALCULATE FITNESS")
         [i.calcFitness() for i in self.pop]
+    def removeDuplicates(self):
+        lenpop = len(self.pop)
+        x = self.pop
+        xx = set(self.pop)
+        lenset = len(xx)
+        npop = []
+        for i in xx:
+            npop.append(i)
+        self.pop= npop
+        print ("REMOVED {} duplacates".format(lenpop-lenset))
     def normalizeFitness(self):
         allFitness = 0
         n_fit = 0
@@ -224,53 +234,68 @@ class population(list):
 
         return self.choosen
 
-    def _tournSelectionSelect(self,tournamensize=1):
-        temppop = copy.deepcopy(self.pop)
-
-
-    @property
-    def tournamentSelection(self):
-       # print ("Tournament selection")
-
-        #temp  = copy.deepcopy(self.pop)
-        self.notChoosen=[]
-        random.shuffle(temp)
-        self.choosen = []
-        final = []
-        while len(self.pop)>1:
-            ch1 = self.pop.pop()
-            ch2 = self.pop.pop()
-            #print (ch1.fitness,"VS", ch2.fitness)
-            if ch1.fitness < ch2.fitness:
-                #print ('win',ch1.fitness)
-                self.choosen.append(ch1)
-                self.notChoosen.append(ch2)
+    def trnSelect(self,tournamentMembers):
+        best = None
+        rest = []
+        for i in tournamentMembers:
+            if best == None:
+                best = i
+            if i.fitness < best.fitness:
+                best = i
             else:
-                #print('win', ch2.fitness)
-                self.choosen.append(ch2)
-                self.notChoosen.append(ch1)
-        #while len(choosen)>1:
-        #    ch1 = choosen.pop()
-        #    ch2 = choosen.pop()
-        #    if ch1.fitness < ch2.fitness:
-        #        final.append(ch1)
+                rest.append(i)
+        #print ("BEST",best)
+        return best,rest
+
+
+
+    def tournamentSelection2(self,tournamentsize=3, numberToSelect=5,choosen=[]):
+        x= self.pop
+        tournamentMembers = []
+        if numberToSelect == 0:
+            print ("WYCHODZE")
+            self.choosen = choosen
+            self.pop = self.pop + self.choosen
+            print (self.choosen)
+            #self.notChoosen = list(set(self.pop)^set(self.choosen))
+            self.notChoosen = self.pop
+
+            print(len(self.pop),len(self.choosen),len(self.notChoosen))
+            return self.choosen
+        for i in range(0,tournamentsize):
+            member = self.pop[random.randint(0,len(self.pop)-1)]
+            tournamentMembers.append(member)
+        #print (tournamentMembers)
+        best,rest = self.trnSelect(tournamentMembers)
+        #print ("Before",len(self.pop))
+        self.pop.remove(best)
+        #print("After", len(self.pop))
+        #for _rest in rest:
+        #    if _rest not in self.pop:
+        #        self.pop.append(_rest)
         #    else:
-        #        final.append(ch2)
-       # print (final,len(self.notChoosen))
-        self.notChoosen.sort(key=lambda x: x.fitness, reverse=False)
-        #for i in self.notChoosen:
-           # print (i.fitness)
-        #print(len(self.pop))
-        return self.choosen
+        #        print ("REST JZU JEST")
+        if best in self.pop:
+            print ("TO JUZ JEST!!!")
+            return
+            self.tournamentSelection2(tournamentsize=tournamentsize, numberToSelect=numberToSelect, choosen=choosen)
+        choosen.append(best)
+        self.tournamentSelection2(tournamentsize = tournamentsize, numberToSelect = numberToSelect-1, choosen = choosen)
+
 
     def crossover(self):
-
+        print("CROSSOVER")
+        if self.crossover_probability == 0:
+            self.choosen=[]
+            #self.notChoosen=[]
+            return
         #print ("Choosen/NotChoosen: {}/{}".format(len(self.choosen),len(self.notChoosen)))
         new_population=[]
         for i in self.choosen:
-            if float(self.crossover_probability) > random.uniform(0,1):
-                #print ('TO CROSSOVER')
-                self.notChoosen.append(self.choosen.pop())
+            x=random.uniform(0,1)
+            if float(self.crossover_probability) < x:
+                print ('TO CROSSOVER',x)
+                self.pop.append(self.choosen.pop())
         #random.shuffle(self.choosen)
        # print("Choosen/NotChoosen: {}/{}".format(len(self.choosen), len(self.notChoosen)))
         counter=0
@@ -304,13 +329,22 @@ class population(list):
         #new_population.extend(self.choosen)
         #new_population.extend(self.notChoosen)
         #print ("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen),len(self.notChoosen),len(new_population)))
+        #print ("123123",self.pop)
+        self.sortByFitness()
+        #print("333323", self.pop)
         while self.populationSize>len(new_population):
            # print("choosen/notchoosen/population {}/{}/{}".format(len(self.choosen), len(self.notChoosen),
            #                                                       len(new_population)))
             try:
-                new_population.append(self.choosen.pop())
+                xxx=self.choosen.pop()
             except IndexError:
-                new_population.append(self.notChoosen.pop())
+                print ("koniec")
+                self.pop = self.pop + new_population
+                self.removeDuplicates()
+                return
+            new_population.append(xxx)
+
         self.pop = new_population
+
         #print("New Population: {}".format(len(new_population)))
 
