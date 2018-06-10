@@ -4,8 +4,6 @@ import copy
 data_path = "DANE.txt"
 data_matrix = np.loadtxt(data_path,skiprows=25)
 flow_matrix = data_matrix
-#print (flow_matrix)
-
 data_file = open(data_path,'r')
 city_list = []
 flow_list = []
@@ -20,14 +18,11 @@ while True:
         data_file.close()
         break
     temp = line.split(' ')
-
-    #city_list.append(.append(counter))
     city_list.append({'idx':counter, 'name':temp[0],'x':temp[1],'y':temp[2]})
     counter += 1
 
 class city():
     def __str__(self):
-        #return "%s idx:%s x:%s y:%s" % (self.name,self.idx,self.x,self.y)
         return "%s idx:%s x:%s y:%s" % (self.name, self.idx, self.x, self.y)
     def __repr__(self):
         return "%s idx:%s x:%s y:%s" % (self.name, self.idx, self.x, self.y)
@@ -38,7 +33,7 @@ class city():
         self.idx = data['idx']
         self.flow_matrix = flow_matrix
     def distanceTo(self,city):
-        return round(np.sqrt(abs((city.x-self.x))^2+abs((city.y-self.y))^2))*10
+        return np.sqrt(abs((city.x-self.x))^2+abs((city.y-self.y))^2)
 
     def speedLimitTo(self,city):
         return self.flow_matrix[self.idx][city.idx]
@@ -47,20 +42,7 @@ class route:
     _counter = 1
     def __init__(self, routeSize,chromosome_list,randomPop, counter):
         self.route = [chromosome_list[0]]
-        #print('RITUAEDASDAS',randomPop)
-        if randomPop == 1:
-            if route._counter==0 or route._counter==routeSize:
-                route._counter=1
-            #x = copy.deepcopy(chromosome_list)
-
-            self.route.extend(random.sample(chromosome_list[1:-1], routeSize-2))
-            #self.route.extend(chromosome_list[-1:])
-        else:
-            for i in range(0,routeSize-2):
-                self.route.append(chromosome_list[route._counter])
-                route._counter =route._counter+1
-                if route._counter == len(chromosome_list):
-                    route._counter=1
+        self.route.extend(random.sample(chromosome_list[1:-1], routeSize - 2))
         self.route.extend(chromosome_list[-1:])
         self.fitness = 0
         self.n_fitness = 0
@@ -77,16 +59,16 @@ class route:
             vmaxall=vmaxall+vmax
             time = dst/vmax
             totaltime = totaltime + time
-            #print ("Time: {} = Dist: {} / Speed: {}".format(time,dst,vmax))
+
             self.fitness+=time
-        #print (dist,'/' ,totaltime,"=",dist/totaltime,self.fitness)
-        self.fitness = self.fitness*+dist-vmaxall
+
+        self.fitness = self.fitness*100
 
 
     def __str__(self):
         string = "F:{} ".format(round(self.fitness))
         for i in self.route:
-            #string = string + "[{}]{} ".format(i.idx,i.name)
+
             string = string + "[{}] ".format(i.idx)
         return string
 
@@ -96,7 +78,6 @@ chromosome_list = [city(i, flow_matrix) for i in city_list]
 
 class population(list):
     def __init__(self,chromosome_list, populationSize, route_size,crossover_probability, mutation_probability,randomPopulation = False,test="TEST"):
-       # print("GENERATE RANDOM",randomPopulation,test)
         self.route_size=route_size
         self.counter=0
         self.populationSize = populationSize
@@ -104,15 +85,10 @@ class population(list):
         self.mutation_probability = mutation_probability
         self.chromosome_list = chromosome_list
         self.pop=[]
-
-
-
-
         [self.pop.append(route(route_size, chromosome_list,randomPopulation,counter=self.counter)) for i in range(0, populationSize)]
 
         self.selected=[]
     def calcFitness(self):
-       # print("CALCULATE FITNESS")
         [i.calcFitness() for i in self.pop]
     def removeDuplicates(self):
         lenpop = len(self.pop)
@@ -123,7 +99,6 @@ class population(list):
         for i in xx:
             npop.append(i)
         self.pop= npop
-        #print ("REMOVED {} duplacates".format(lenpop-lenset))
     def normalizeFitness(self):
         allFitness = 0
         n_fit = 0
@@ -135,39 +110,31 @@ class population(list):
         self.meanFitness = allFitness/self.populationSize
     def sortByFitness(self):
         self.pop.sort(key=lambda x: x.fitness, reverse=False)
-    def mutation(self):
+    def mutation(self,mutationOptions):
 
         mutate = []
-        mutation_method = ['shuffle']
-       # mutation_method = ['swapPosition', 'changeOne','shuffle']
-        #mutation_method = ['swapPosition','changeOne','changeMore']
-        #mutation_method = ['changeMore']
+        mutation_method = mutationOptions
+        #print (mutation_method)
         for i in self.pop:
             rand = random.uniform(0,1)
             if rand < self.mutation_probability:
               #  print("MUTATION")
                 method = random.choice(mutation_method)
-               # print ('mutuje',i,self.mutation_probability, method, rand)
                 mutate.append({"route":i, "method":method})
         for i in mutate:
             if i['method'] == 'swapPosition':
                 toSwap = random.sample(range(1,len(i['route'].route)-1),2)
-              #  print (toSwap)
                 _cpy = copy.deepcopy(i['route'])
-                #print (i['route'].route)
                 i['route'].route[toSwap[0]] = _cpy.route[toSwap[1]]
                 i['route'].route[toSwap[1]] = _cpy.route[toSwap[0]]
-                #print(i['route'].route)
             elif i['method'] == 'changeOne':
                 toChange = random.randint(1,len(i['route'].route)-1)
                 __ch_list = copy.deepcopy(self.chromosome_list)
                 ch_list = __ch_list[1:-1]
                 random.shuffle(ch_list)
-               # print (i['route'].route)
                 for chr in ch_list:
                     isValid = True
                     for y in range(1,len(i['route'].route)-2):
-                    #for city in chr[1:-1]
                         if city==i['route'].route[y]:
                             isValid= False
                     if isValid == True:
@@ -175,68 +142,30 @@ class population(list):
                         break
 
             elif i['method'] == 'shuffle':
-              #  print ("przed sszufle",i['route'].route)
                 chr = copy.deepcopy(i['route'])
                 chrroute = chr.route[1:-1]
                 random.shuffle(chrroute)
                 _tab = list(range(1,len(i['route'].route)-1))
                 _2tab = list(range(1,len(i['route'].route)-1))
-               # print(_2tab)
                 random.shuffle(_2tab)
-              #  print(_2tab)
                 for c in _tab:
                     i['route'].route[c] = chrroute[c - 1]
-                   # print(i['route'].route[c],chr.route[_tab[y]],"xd")
 
 
-               # print ("poddd szufle",i['route'].route)
-                #valuesToChange = random.sample(range(1,len(i['route'].route) - 1),amountToChange)
-                #print (valuesToChange)
-
-
-    def selection_BestHalf(self):
+    def selection_BestHalf(self,numberToSelect=50):
+        self.choosen=[]
         self.sortByFitness()
         popsize = len(self.pop)
-        halfpop= int(popsize/2)
-        self.choosen = self.pop[:halfpop]
-        self.notChoosen = self.pop[halfpop:]
-        #for i in self.choosen:
-        #    print ('chosen',i.fitness)
-        #for i in self.notChoosen:
-        #    print ('notchosen',i.fitness)
+        for i in range(0,numberToSelect):
+            self.choosen.append(self.pop.pop())
 
-    def tournamentSelection(self):
-        #print ("Tournament selection")
-        #temp  = copy.deepcopy(self.pop)
-        self.notChoosen=[]
-        random.shuffle(temp)
-        self.choosen = []
-        final = []
-        while len(self.pop)>1:
-            ch1 = self.pop.pop()
-            ch2 = self.pop.pop()
-            #print (ch1.fitness,"VS", ch2.fitness)
-            if ch1.fitness < ch2.fitness:
-                #print ('win',ch1.fitness)
-                self.choosen.append(ch1)
-                self.notChoosen.append(ch2)
-            else:
-                #print('win', ch2.fitness)
-                self.choosen.append(ch2)
-                self.notChoosen.append(ch1)
-        #while len(choosen)>1:
-        #    ch1 = choosen.pop()
-        #    ch2 = choosen.pop()
-        #    if ch1.fitness < ch2.fitness:
-        #        final.append(ch1)
-        #    else:
-        #        final.append(ch2)
-       # print (final,len(self.notChoosen))
-        self.notChoosen.sort(key=lambda x: x.fitness, reverse=False)
-        #for i in self.notChoosen:
-           # print (i.fitness)
+    def randomSelect(self,numberToSelect=50):
+        self.choosen=[]
+        x = self.pop
+        random.shuffle(x)
+        for i in range(0,numberToSelect):
+            self.choosen.append(self.pop.pop())
 
-        return self.choosen
 
     def trnSelect(self,tournamentMembers):
         best = None
@@ -248,17 +177,14 @@ class population(list):
                 best = i
             else:
                 rest.append(i)
-        #print ("BEST",best)
         return best,rest
 
 
 
-    def tournamentSelection2(self,tournamentsize=5, numberToSelect=50,choosen=[]):
-        x= self.pop
+    def tournamentSelection(self,tournamentsize=5, numberToSelect=50,choosen=[]):
         tournamentMembers = []
-        #print (">>>>>>>>>>>>>>>>>>>>>>>>>>>",tournamentsize, numberToSelect)
         if numberToSelect == 0:
-            print(len(self.pop), len(choosen))
+           # print(len(self.pop), len(choosen))
             self.choosen = choosen
             self.pop = self.pop + self.choosen
             return self.choosen
@@ -271,55 +197,33 @@ class population(list):
         self.pop.remove(best)
 
         if best in self.pop:
-            print ("TO JUZ JEST!!!")
             return
-            self.tournamentSelection2(tournamentsize=tournamentsize, numberToSelect=numberToSelect, choosen=choosen)
+            self.tournamentSelection(tournamentsize=tournamentsize, numberToSelect=numberToSelect, choosen=choosen)
         choosen.append(best)
-        self.tournamentSelection2(tournamentsize = tournamentsize, numberToSelect = numberToSelect-1, choosen = choosen)
+        self.tournamentSelection(tournamentsize = tournamentsize, numberToSelect = numberToSelect-1, choosen = choosen)
 
 
-    def crossover(self):
-        print("CROSSOVER")
+    def crossover_RandomPoints(self):
         if self.crossover_probability == 0:
             self.choosen=[]
-            #self.notChoosen=[]
             return
-        #print ("Choosen/NotChoosen: {}/{}".format(len(self.choosen),len(self.notChoosen)))
         new_population=[]
         for i in self.choosen:
             x=random.uniform(0,1)
             if float(self.crossover_probability) < x:
-                #print ('TO CROSSOVER',x)
-                #self.pop.append(self.choosen.pop())
                 new_population.append(self.choosen.pop())
-        #random.shuffle(self.choosen)
-       # print("Choosen/NotChoosen: {}/{}".format(len(self.choosen), len(self.notChoosen)))
         counter=0
-        len_choosen = len(self.choosen)
-        print("ilosc wybranych drog do mutacji: ",len_choosen)
-        print("0Population/NewPopulation/choosen {}/{}/{}".format(len(self.pop), len(new_population), len(self.choosen)))
-
-
         while len(self.choosen)>2:
-            #print("CROSSOVER")
-            #print (counter)
-            #counter+=1
-            #print (counter)
             try:
                 ch1 = copy.deepcopy(self.choosen[counter])
-                ch2 = copy.deepcopy(self.choosen[counter+1]) ## SPRAWDZIC
-               # print ("CH1: {} | CH2: {}".format(self.choosen[counter],self.choosen[counter+1]))
+                ch2 = copy.deepcopy(self.choosen[counter+1])
             except IndexError:
                 if ch1:
-                    print ("INDEX ERROR",ch1,len_choosen,counter)
-
-                    #new_population.append(ch1)
                     break
                 else:
                     break
             counter+=2
 
-            #print(counter)
             crossPoints = random.sample(range(1, self.route_size - 1), random.randint(0, self.route_size - 2))
             for i in crossPoints:
                 status=1
@@ -329,15 +233,88 @@ class population(list):
                 if status == 1:
                     ch1.route[i] = ch2.route[i]
             ch1.calcFitness()
-            #print("CH1: {} | CH2: {}".format(ch1, ch2))
+
             new_population.append(ch1)
-
-
         self.pop.extend(new_population)
         self.pop.extend(self.choosen)
-        #new_population.extend(self.pop[-(self.populationSize - len(new_population)):])
-        #self.pop=new_population
         self.sortByFitness()
         self.removeDuplicates()
         self.pop = self.pop[:self.populationSize]
 
+    def crossover_twoPointsofCrossing(self):
+        if self.crossover_probability == 0:
+            self.choosen=[]
+            return
+        new_population=[]
+        for i in self.choosen:
+            x=random.uniform(0,1)
+            if float(self.crossover_probability) < x:
+                new_population.append(self.choosen.pop())
+        counter=0
+        while len(self.choosen)>2:
+            try:
+                ch1 = copy.deepcopy(self.choosen[counter])
+                ch2 = copy.deepcopy(self.choosen[counter+1])
+            except IndexError:
+                if ch1:
+                    break
+                else:
+                    break
+            counter+=2
+            left = random.randint(1,self.route_size-2)
+            right = random.randint(left,self.route_size-1)
+
+            crossPoints = list(range(left,right))
+            for i in crossPoints:
+                status=1
+                for y in ch1.route:
+                    if y.idx == ch2.route[i].idx:
+                        status=0
+                if status == 1:
+                    ch1.route[i] = ch2.route[i]
+            ch1.calcFitness()
+
+            new_population.append(ch1)
+        self.pop.extend(new_population)
+        self.pop.extend(self.choosen)
+        self.sortByFitness()
+        self.removeDuplicates()
+        self.pop = self.pop[:self.populationSize]
+
+    def crossover_pointOfCross(self):
+        if self.crossover_probability == 0:
+            self.choosen=[]
+            return
+        new_population=[]
+        for i in self.choosen:
+            x=random.uniform(0,1)
+            if float(self.crossover_probability) < x:
+                new_population.append(self.choosen.pop())
+        counter=0
+        while len(self.choosen)>2:
+            try:
+                ch1 = copy.deepcopy(self.choosen[counter])
+                ch2 = copy.deepcopy(self.choosen[counter+1])
+            except IndexError:
+                if ch1:
+                    break
+                else:
+                    break
+            counter+=2
+
+            crossPoints = range(1,random.randint(1,self.route_size-1))
+            for i in crossPoints:
+                status=1
+                for y in ch1.route:
+                    if y.idx == ch2.route[i].idx:
+                        status=0
+                if status == 1:
+                    ch1.route[i] = ch2.route[i]
+            ch1.calcFitness()
+
+            new_population.append(ch1)
+        self.pop.extend(new_population)
+        self.pop.extend(self.choosen)
+        self.sortByFitness()
+        self.removeDuplicates()
+        self.pop = self.pop[:self.populationSize]
