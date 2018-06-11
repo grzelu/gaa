@@ -77,9 +77,9 @@ class GA(population):
         for i in range(0,n_iterations):
             self.makePopulationLabelText()
             self.selection()
-            self.removeDuplicates()
+            #self.removeDuplicates()
             self.crossover()
-            self.removeDuplicates()
+            #self.removeDuplicates()
             self.mutation(self.mutationOptions)
             self.calcFitness()
             self.makePopulationLabelText()

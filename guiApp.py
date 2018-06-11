@@ -125,9 +125,9 @@ class guiApp():
         self.__mutationProbabilityEntry = self.makeEntry(5, 7, 0.1, "Mutation probability")
         self.__tournamenSelectionSize = self.makeEntry(8, 7, 6, "size of tournament")
         self.__tournamenSelectionSelect = self.makeEntry(9,7, 60, "amount of selections")
-        self.__popSizeEntry = self.makeEntry(2, 7, 1000, "Population size")
-        self.__routeSizeEntry = self.makeEntry(3, 7, 7, "Route size")
-        self.__iterations = self.makeEntry(6, 7, 500, "Iterations")
+        self.__popSizeEntry = self.makeEntry(2, 7, 200, "Population size")
+        self.__routeSizeEntry = self.makeEntry(3, 7, 6, "Route size")
+        self.__iterations = self.makeEntry(6, 7, 200, "Iterations")
         self.__instantions = self.makeEntry(7, 7, 1, "number of runs")
 
     def createFigures(self):
