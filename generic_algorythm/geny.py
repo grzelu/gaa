@@ -1,20 +1,19 @@
 import numpy as np
 import random
 import copy
-data_path = "DANE.txt"
-data_matrix = np.loadtxt(data_path,skiprows=25)
+data_path = "vars/DANE.txt"
+data_matrix = np.loadtxt(data_path, skiprows=25)
 flow_matrix = data_matrix
 data_file = open(data_path,'r')
 city_list = []
 flow_list = []
-flow=False
+flow = False
 counter = 0
 
 while True:
 
     line = data_file.readline().strip('\r\n')
-    #print(line)
-    if line=='---':
+    if line == '---':
         data_file.close()
         break
     temp = line.split(' ')
@@ -22,7 +21,7 @@ while True:
     counter += 1
 
 
-class city():
+class City():
     def __str__(self):
         return "%s idx:%s" % (self.name, self.idx)
 
@@ -35,38 +34,40 @@ class city():
         self.y = int(data['y'])
         self.idx = data['idx']
         self.flow_matrix = flow_matrix
-    def distanceTo(self,city):
+
+    def distance_to(self, city):
         return np.sqrt(abs((city.x-self.x))^2+abs((city.y-self.y))^2)
 
-    def speedLimitTo(self,city):
+    def speed_limit_to(self, city):
         return self.flow_matrix[self.idx][city.idx]
 
-class route:
+
+class Route:
     _counter = 1
-    def __init__(self, routeSize,chromosome_list,randomPop, counter):
+
+    def __init__(self, route_size, chromosome_list, random_pop, counter):
         self.route = [chromosome_list[0]]
-        self.route.extend(random.sample(chromosome_list[1:-1], routeSize - 2))
+        self.route.extend(random.sample(chromosome_list[1:-1], route_size - 2))
         self.route.extend(chromosome_list[-1:])
         self.fitness = 0
         self.n_fitness = 0
 
-    def calcFitness(self):
-        self.fitness=0;
-        dist=0
-        totaltime=0
-        vmaxall=0
-        for i in range(0,len(self.route)-1):
-            dst = self.route[i].distanceTo(self.route[i+1])*1
-            vmax = self.route[i].speedLimitTo(self.route[i+1])
-            dist=dist+dst
-            vmaxall=vmaxall+vmax
-            time = dst/vmax
-            totaltime = totaltime + time
+    def calc_fitness(self):
+        self.fitness = 0
+        dist = 0
+        total_time = 0
+        v_max_all = 0
+        for i in range(0, len(self.route)-1):
+            dst = self.route[i].distance_to(self.route[i + 1]) * 1
+            vmax = self.route[i].speed_limit_to(self.route[i + 1])
+            dist = dist + dst
+            v_max_all = v_max_all + vmax
+            time = dst / vmax
+            total_time = total_time + time
 
-            self.fitness+=time
+            self.fitness += time
 
         self.fitness = self.fitness*100
-
 
     def __str__(self):
         string = "F:{} ".format(round(self.fitness),2)
@@ -77,23 +78,29 @@ class route:
 
     def __repr__(self):
         return self.__str__()
-chromosome_list = [city(i, flow_matrix) for i in city_list]
+
+
+chromosome_list = [City(i, flow_matrix) for i in city_list]
+
 
 class population(list):
-    def __init__(self,chromosome_list, populationSize, route_size,crossover_probability, mutation_probability,randomPopulation = False,test="TEST"):
-        self.route_size=route_size
+
+    def __init__(self, chromosome_list, population_size, route_size, crossover_probability, mutation_probability, random_population = False):
+        self.route_size = route_size
         self.counter=0
-        self.populationSize = populationSize
+        self.population_size = population_size
         self.crossover_probability = crossover_probability
         self.mutation_probability = mutation_probability
         self.chromosome_list = chromosome_list
-        self.pop=[]
-        [self.pop.append(route(route_size, chromosome_list,randomPopulation,counter=self.counter)) for i in range(0, populationSize)]
+        self.pop = []
+        [self.pop.append(Route(route_size, chromosome_list, random_population, counter=self.counter)) for i in range(0, population_size)]
 
         self.selected=[]
-    def calcFitness(self):
-        [i.calcFitness() for i in self.pop]
-    def removeDuplicates(self):
+
+    def calc_fitness(self):
+        [i.calc_fitness() for i in self.pop]
+
+    def remove_duplicates(self):
         lenpop = len(self.pop)
         x = self.pop
         xx = set(self.pop)
@@ -102,167 +109,151 @@ class population(list):
         for i in xx:
             npop.append(i)
         self.pop= npop
-    def normalizeFitness(self):
-        allFitness = 0
+
+    def normalize_fitness(self):
+        all_fitness = 0
         n_fit = 0
         for i in self.pop:
-            allFitness += i.fitness
+            all_fitness += i.fitness
 
         for i in self.pop:
-            i.n_fitness = i.fitness / allFitness
-        self.meanFitness = allFitness/len(self.pop)
-    def sortByFitness(self):
+            i.n_fitness = i.fitness / all_fitness
+        self.mean_fitness = all_fitness / len(self.pop)
+
+    def sort_by_fitness(self):
         self.pop.sort(key=lambda x: x.fitness, reverse=False)
-    def mutation(self,mutationOptions):
+
+    def mutation(self, mutation_options):
 
         mutate = []
-        mutation_method = mutationOptions
-        #print (mutation_method)
+        mutation_method = mutation_options
         for i in self.pop:
             rand = random.uniform(0,1)
             if rand < self.mutation_probability:
-              #  print("MUTATION")
-                #print (rand)
                 method = random.choice(mutation_method)
-
                 mutate.append({"route":i, "method":method})
-                #print(len(mutate))
+
         for i in mutate:
-            #print(mutationOptions)
             if i['method'] == 'swapPosition':
                 print("SWAP POSITION")
-                toSwap = random.sample(range(1,len(i['route'].route)-1),2)
+                to_swap = random.sample(range(1,len(i['route'].route)-1),2)
                 _cpy = copy.deepcopy(i['route'])
-                i['route'].route[toSwap[0]] = _cpy.route[toSwap[1]]
-                i['route'].route[toSwap[1]] = _cpy.route[toSwap[0]]
-                i['route'].calcFitness()
+                i['route'].route[to_swap[0]] = _cpy.route[to_swap[1]]
+                i['route'].route[to_swap[1]] = _cpy.route[to_swap[0]]
+                i['route'].calc_fitness()
             elif i['method'] == 'changeOne':
                 print("CHANGE ONE")
-                toChange = random.randint(1,len(i['route'].route)-1)
-               # print (toChange)
-                #print(len(i['route'].route))
+                to_change = random.randint(1,len(i['route'].route)-1)
                 __ch_list = copy.deepcopy(self.chromosome_list)
                 ch_list = __ch_list[1:-1]
                 random.shuffle(ch_list)
-                #print(ch_list)
                 for chr in ch_list:
-                    isValid = True
-                    #print(list(range(1, len(i['route'].route) - 1)))
-                    for y in range(1,len(i['route'].route)-1):
-                        if chr.idx==i['route'].route[y].idx:
-                            isValid= False
-                    if isValid == True:
+                    is_valid = True
+
+                    for y in range(1, len(i['route'].route)-1):
+                        if chr.idx == i['route'].route[y].idx:
+                            is_valid = False
+                    if is_valid:
                         if int(chr.idx) == 23:
                             continue
-                        if int(i['route'].route[toChange].idx) == 23:
+                        if int(i['route'].route[to_change].idx) == 23:
                             continue
-                        #print (chr,i['route'].route[toChange])
-                        i['route'].route[toChange] = chr
-                        i['route'].calcFitness()
+                        i['route'].route[to_change] = chr
+                        i['route'].calc_fitness()
                         break
+
             elif i['method'] == 'changeMore':
-                print("CHANGE MORE")
-                rang = range(1,len(i['route'].route)-1)
-                count = random.randint(1,len(i['route'].route)-2)
-                _toChange = random.sample(rang,count)
-               # print (toChange)
-                #print(len(i['route'].route))
+                rang = range(1, len(i['route'].route)-1)
+                count = random.randint(1, len(i['route'].route)-2)
+                _to_change = random.sample(rang, count)
                 __ch_list = copy.deepcopy(self.chromosome_list)
                 ch_list = __ch_list[1:-1]
                 random.shuffle(ch_list)
-                #print(ch_list)
-               # print("BEFORE",i['route'])
-                for toChange in _toChange:
+
+                for to_change in _to_change:
                     for chr in ch_list:
-                        isValid = True
-                        #print(list(range(1, len(i['route'].route) - 1)))
-                        for y in range(1,len(i['route'].route)-1):
-                            if chr.idx==i['route'].route[y].idx:
-                                isValid= False
-                        if isValid == True:
+                        is_valid = True
+                        for y in range(1, len(i['route'].route)-1):
+                            if chr.idx == i['route'].route[y].idx:
+                                is_valid = False
+                        if is_valid:
                             if int(chr.idx) == 23:
                                 continue
-                            if int(i['route'].route[toChange].idx) == 23:
+                            if int(i['route'].route[to_change].idx) == 23:
                                 continue
-                            #print (chr,i['route'].route[toChange])
-                            i['route'].route[toChange] = chr
-                            i['route'].calcFitness()
+                            i['route'].route[to_change] = chr
+                            i['route'].calc_fitness()
                             break
-                #print("AFTER", i['route'])
+
             elif i['method'] == 'shuffle':
-                print("SHUFLE")
                 chr = copy.deepcopy(i['route'])
                 chrroute = chr.route[1:-1]
                 random.shuffle(chrroute)
-                _tab = list(range(1,len(i['route'].route)-1))
-                _2tab = list(range(1,len(i['route'].route)-1))
+                _tab = list(range(1, len(i['route'].route)-1))
+                _2tab = list(range(1, len(i['route'].route)-1))
                 random.shuffle(_2tab)
                 for c in _tab:
                     i['route'].route[c] = chrroute[c - 1]
-                i['route'].calcFitness()
+                i['route'].calc_fitness()
 
-    def selection_BestHalf(self,numberToSelect=50):
-        self.choosen=[]
-        self.sortByFitness()
+    def selection__best_half(self, number_to_select=50):
+        self.choosen = []
+        self.sort_by_fitness()
         popsize = len(self.pop)
-        for i in range(0,numberToSelect):
+        for i in range(0, number_to_select):
             self.choosen.append(self.pop.pop(i))
 
-    def randomSelect(self,numberToSelect=50):
-        self.choosen=[]
+    def random_select(self, number_to_select=50):
+        self.choosen = []
         x = self.pop
         random.shuffle(x)
-        for i in range(0,numberToSelect):
+        for i in range(0, number_to_select):
             self.choosen.append(self.pop.pop())
 
-
-    def trnSelect(self,tournamentMembers):
+    def trn_select(self, tournament_members):
         best = None
         rest = []
-        for i in tournamentMembers:
-            if best == None:
+        for i in tournament_members:
+            if not best:
                 best = i
             if i.fitness < best.fitness:
                 best = i
             else:
                 rest.append(i)
-        return best,rest
+        return best, rest
 
-
-
-    def tournamentSelection(self,tournamentsize=5, numberToSelect=50,choosen=[]):
-        tournamentMembers = []
-        if numberToSelect == 0:
-           # print(len(self.pop), len(choosen))
+    def tournament_selection(self, tournament_size=5, number_to_select=50, choosen=[]):
+        tournament_members = []
+        if number_to_select == 0:
             self.choosen = choosen
             self.pop = self.pop + self.choosen
             return self.choosen
-        for i in range(0,tournamentsize):
+        for i in range(0, tournament_size):
             member = self.pop[random.randint(0,len(self.pop)-1)]
-            tournamentMembers.append(member)
+            tournament_members.append(member)
 
-        best,rest = self.trnSelect(tournamentMembers)
+        best,rest = self.trn_select(tournament_members)
 
         self.pop.remove(best)
 
         if best in self.pop:
             return
-            self.tournamentSelection(tournamentsize=tournamentsize, numberToSelect=numberToSelect, choosen=choosen)
+#           self.tournament_selection(tournament_size=tournament_size,
+        # number_to_select=number_to_select, choosen=choosen)
         choosen.append(best)
-        self.tournamentSelection(tournamentsize = tournamentsize, numberToSelect = numberToSelect-1, choosen = choosen)
+        self.tournament_selection(tournament_size= tournament_size, number_to_select=number_to_select - 1, choosen = choosen)
 
-
-    def crossover_RandomPoints(self):
+    def crossover__random_points(self):
         if self.crossover_probability == 0:
-            self.choosen=[]
+            self.choosen = []
             return
-        new_population=[]
+        new_population = []
         for i in self.choosen:
-            x=random.uniform(0,1)
+            x = random.uniform(0, 1)
             if float(self.crossover_probability) < x:
                 new_population.append(self.choosen.pop())
-        counter=0
-        while len(self.choosen)>2:
+        counter = 0
+        while len(self.choosen) > 2:
             try:
                 ch1 = copy.deepcopy(self.choosen[counter])
                 ch2 = copy.deepcopy(self.choosen[counter+1])
@@ -271,26 +262,26 @@ class population(list):
                     break
                 else:
                     break
-            counter+=2
+            counter += 2
 
-            crossPoints = random.sample(range(1, self.route_size - 1), random.randint(0, self.route_size - 2))
-            for i in crossPoints:
-                status=1
+            cross_points = random.sample(range(1, self.route_size - 1), random.randint(0, self.route_size - 2))
+            for i in cross_points:
+                status = 1
                 for y in ch1.route:
                     if y.idx == ch2.route[i].idx:
-                        status=0
+                        status = 0
                 if status == 1:
                     ch1.route[i] = ch2.route[i]
-            ch1.calcFitness()
+            ch1.calc_fitness()
 
             new_population.append(ch1)
         self.pop.extend(new_population)
         self.pop.extend(self.choosen)
-        self.sortByFitness()
-        self.removeDuplicates()
-        self.pop = self.pop[:self.populationSize]
+        self.sort_by_fitness()
+        self.remove_duplicates()
+        self.pop = self.pop[:self.population_size]
 
-    def crossover_twoPointsofCrossing(self):
+    def crossover_two_pointsof_crossing(self):
         if self.crossover_probability == 0:
             self.choosen=[]
             return
@@ -321,14 +312,14 @@ class population(list):
                         status=0
                 if status == 1:
                     ch1.route[i] = ch2.route[i]
-            ch1.calcFitness()
+            ch1.calc_fitness()
 
             new_population.append(ch1)
         self.pop.extend(new_population)
         self.pop.extend(self.choosen)
-        self.sortByFitness()
+        self.sort_by_fitness()
         #self.removeDuplicates()
-        self.pop = self.pop[:self.populationSize]
+        self.pop = self.pop[:self.population_size]
 
     def crossover_pointOfCross(self):
         if self.crossover_probability == 0:
@@ -359,13 +350,13 @@ class population(list):
                         status=0
                 if status == 1:
                     ch1.route[i] = ch2.route[i]
-            ch1.calcFitness()
+            ch1.calc_fitness()
 
             new_population.append(ch1)
         self.pop.extend(new_population)
         self.pop.extend(self.choosen)
-        self.sortByFitness()
-        self.removeDuplicates()
-        self.pop = self.pop[:self.populationSize]
+        self.sort_by_fitness()
+        self.remove_duplicates()
+        self.pop = self.pop[:self.population_size]
 
 

@@ -1,3 +1,4 @@
-from guiApp import guiApp
-gui = guiApp()
+from gui_app import GuiApp
+
+gui = GuiApp.GuiApp()
 gui.run()

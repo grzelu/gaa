@@ -15,37 +15,38 @@ else:
     import tkinter as Tk
 
 
-class guiApp():
+class GuiApp():
     def __init__(self):
         self.root = Tk.Tk()
         self.root.geometry("1466x900")
         self.root.wm_title("Genetic Algorithm - SWDiSK 2018 [PWR]")
-        self.createFrames()
-        self.createOptions()
-        self.createEnties()
-        self.createFigures()
-        self.createCheckButtons()
-        self.createLabels()
-        self.createButtons(self.framebuttons)
+        self.create_frames()
+        self.create_options()
+        self.create_enties()
+        self.create_figures()
+        self.create_check_buttons()
+        self.create_labels()
+        self.create_buttons(self.framebuttons)
         self.randomPopulation = True
         self.elitism = 0
         self.startCounter = 0
 
-    def createOptions(self):
+    def create_options(self):
         label = Tk.Label(self.framebuttons, text="Selection options")
         label.pack(side=Tk.TOP,anchor='w')
-        self._selectOptionVar = Tk.StringVar(self.framebuttons)
-        self._selectOptionVar.set("Tournament Selection")
-        w = Tk.OptionMenu(self.framebuttons,self._selectOptionVar, "Tournament Selection", "Random","Best")
+        self._select_option_var = Tk.StringVar(self.framebuttons)
+        self._select_option_var.set("Tournament Selection")
+        w = Tk.OptionMenu(self.framebuttons, self._select_option_var, "Tournament Selection", "Random", "Best")
         w.pack(side=Tk.TOP,anchor='w')
         label = Tk.Label(self.framebuttons, text="Crossover options")
         label.pack(side=Tk.TOP,anchor='w')
-        self._CrossoverOptionVar = Tk.StringVar(self.framebuttons)
-        self._CrossoverOptionVar.set("Random Points")
+        self.__crossover_option_var = Tk.StringVar(self.framebuttons)
+        self.__crossover_option_var.set("Random Points")
 
-        w = Tk.OptionMenu(self.framebuttons,self._CrossoverOptionVar, "Random Points", "One Point of Crossing","Two Point of Crossing")
+        w = Tk.OptionMenu(self.framebuttons, self.__crossover_option_var, "Random Points", "One Point of Crossing", "Two Point of Crossing")
         w.pack(side=Tk.TOP,anchor='w')
-    def createFrames(self):
+
+    def create_frames(self):
         self._frame = Tk.Frame(self.root, bg='red')
         self._frame.pack(side=Tk.LEFT, anchor='nw')
 
@@ -61,32 +62,32 @@ class guiApp():
         self.frame = Tk.Frame(self.root, width=450, height=600, pady=3)
         self.frame.pack(side=Tk.LEFT)
 
-    def createLabels(self):
+    def create_labels(self):
         #self.window = Tk.Toplevel(self.framebuttons)
-        self.LabelWindowPopulation = Tk.Label(self.frame, text='', fg='blue')
-        self.LabelWindowPopulation.pack(side=Tk.LEFT)
+        self.label_window_population = Tk.Label(self.frame, text='', fg='blue')
+        self.label_window_population.pack(side=Tk.LEFT)
 
-        self.LabelWindowFirstPopulation = Tk.Label(self.frame, text='', fg='red')
-        self.LabelWindowFirstPopulation.pack(side=Tk.LEFT)
+        self.label_window_first_population = Tk.Label(self.frame, text='', fg='red')
+        self.label_window_first_population.pack(side=Tk.LEFT)
 
-    def createCheckButtons(self):
+    def create_check_buttons(self):
         self.var = Tk.IntVar()
         label = Tk.Label(self.framebuttons, text="Mutation options")
         label.pack(side=Tk.TOP,anchor='w')
-        self.generateRandom = Tk.Checkbutton(self.framebuttons, text="Generate static", variable=self.var, command=self.cb)
+        self.generate_random = Tk.Checkbutton(self.framebuttons, text="Generate static", variable=self.var, command=self.cb)
 
-        self.generateRandom.pack(side=Tk.TOP,anchor='w')
+        self.generate_random.pack(side=Tk.TOP, anchor='w')
         self._var_elitism = Tk.IntVar()
         elitism = Tk.Checkbutton(self.framebuttons, text="Elitism", variable=self._var_elitism, command=self.cb)
         elitism.select()
         elitism.pack(side=Tk.TOP,anchor='w')
 
-        self._var_mutation_swapPosition = Tk.IntVar()
-        swapPosition = Tk.Checkbutton(self.framebuttons, text="swapPosition", variable=self._var_mutation_swapPosition, command=self.cb)
+        self._var_mutation_swap_position = Tk.IntVar()
+        swapPosition = Tk.Checkbutton(self.framebuttons, text="swapPosition", variable=self._var_mutation_swap_position, command=self.cb)
         swapPosition.pack(side=Tk.TOP,anchor='w')
 
-        self._var_mutation_changeOne = Tk.IntVar()
-        changeOne = Tk.Checkbutton(self.framebuttons, text="changeOne", variable=self._var_mutation_changeOne, command=self.cb)
+        self._var_mutation_change_one = Tk.IntVar()
+        changeOne = Tk.Checkbutton(self.framebuttons, text="changeOne", variable=self._var_mutation_change_one, command=self.cb)
         changeOne.pack(side=Tk.TOP,anchor='w')
 
         self._var_mutation_shuffle = Tk.IntVar()
@@ -97,9 +98,9 @@ class guiApp():
         changeMore = Tk.Checkbutton(self.framebuttons, text="changeMore", variable=self._var_mutation_changeMore, command=self.cb)
         changeMore.pack(side=Tk.TOP,anchor='w')
 
-    def getMutationMethods(self):
-        changeOne = self._var_mutation_changeOne.get()
-        swapPosition = self._var_mutation_swapPosition.get()
+    def get_mutation_methods(self):
+        change_one = self._var_mutation_change_one.get()
+        swap_position = self._var_mutation_swap_position.get()
         shuffle = self._var_mutation_shuffle.get()
         changeMore = self._var_mutation_changeMore.get()
         options = []
@@ -107,44 +108,44 @@ class guiApp():
             options.append("changeMore")
         if shuffle == 1:
             options.append("shuffle")
-        if changeOne == 1:
-            options.append("changeOne")
-        if swapPosition == 1:
-            options.append("swapPosition")
+        if change_one == 1:
+            options.append("change_one")
+        if swap_position == 1:
+            options.append("swap_position")
         return options
 
     def cb(self):
         self.randomPopulation = self.var.get()
         self.elitism = self._var_elitism.get()
 
-    def createEnties(self):
-        self.__crossoverProbabilityEntry = self.makeEntry(4, 7, 0.9, "Crossover probability")
-        self.__mutationProbabilityEntry = self.makeEntry(5, 7, 0.1, "Mutation probability")
-        self.__tournamenSelectionSize = self.makeEntry(8, 7, 6, "size of tournament")
-        self.__tournamenSelectionSelect = self.makeEntry(9,7, 60, "amount of selections")
-        self.__popSizeEntry = self.makeEntry(2, 7, 200, "Population size")
-        self.__routeSizeEntry = self.makeEntry(3, 7, 6, "Route size")
-        self.__iterations = self.makeEntry(6, 7, 200, "Iterations")
-        self.__instantions = self.makeEntry(7, 7, 1, "number of runs")
+    def create_enties(self):
+        self.__crossover_probability_entry = self.make_entry(4, 7, 0.9, "Crossover probability")
+        self.__mutation_probability_entry = self.make_entry(5, 7, 0.1, "Mutation probability")
+        self.__tournamen_selection_size = self.make_entry(8, 7, 6, "size of tournament")
+        self.__tournamen_selection_select = self.make_entry(9, 7, 60, "amount of selections")
+        self.__pop_size_entry = self.make_entry(2, 7, 200, "Population size")
+        self.__route_size_entry = self.make_entry(3, 7, 6, "Route size")
+        self.__iterations = self.make_entry(6, 7, 200, "Iterations")
+        self.__instantions = self.make_entry(7, 7, 1, "number of runs")
 
-    def createFigures(self):
-        self.leftFigure = Figure(figsize=(7, 7), dpi=60)
-        self.leftSubplot = self.createSubplot(self.leftFigure, "Current population BEST(g)/WORST(r)")
-        self.leftCanvas = self.createCanvas(self.leftFigure, self.frame0, 'LEFT')
+    def create_figures(self):
+        self.left_figure = Figure(figsize=(7, 7), dpi=60)
+        self.left_subplot = self.create_subplot(self.left_figure, "Current population BEST(g)/WORST(r)")
+        self.left_canvas = self.create_canvas(self.left_figure, self.frame0, 'LEFT')
 
-        self.rightFigure = Figure(figsize=(7, 7), dpi=60)
-        self.rightCanvas = self.createCanvas(self.rightFigure, self.frame0, 'RIGHT')
-        self.rightSubplot = self.createSubplot(self.rightFigure, "Best solution so far")
+        self.right_figure = Figure(figsize=(7, 7), dpi=60)
+        self.right_canvas = self.create_canvas(self.right_figure, self.frame0, 'RIGHT')
+        self.right_subplot = self.create_subplot(self.right_figure, "Best solution so far")
 
-        self.botLeftFigure = Figure(figsize=(14, 7), dpi=60)
-        self.downLeftSubplot = self.createSubplot(self.botLeftFigure, "Fitness")
-        self.downLeftCanvas = self.createCanvas(self.botLeftFigure, self.frame01, 'TOP')
+        self.bot_left_figure = Figure(figsize=(14, 7), dpi=60)
+        self.down_left_subplot = self.create_subplot(self.bot_left_figure, "Fitness")
+        self.down_left_canvas = self.create_canvas(self.bot_left_figure, self.frame01, 'TOP')
 
-        #self.botRightFigure = Figure(figsize=(7, 7), dpi=60)
-        #self.downRightSubplot = self.createSubplot(self.botRightFigure, "Best of current generation")
-        #self.downRightCanvas = self.createCanvas(self.botRightFigure, self.frame01, 'BOTTOM')
+#       self.botRightFigure = Figure(figsize=(7, 7), dpi=60)
+#       self.downRightSubplot = self.createSubplot(self.botRightFigure, "Best of current generation")
+#       self.downRightCanvas = self.createCanvas(self.botRightFigure, self.frame01, 'BOTTOM')
 
-    def createCanvas(self, figure, master, side):
+    def create_canvas(self, figure, master, side):
         canvas = FigureCanvasTkAgg(figure, master=master)
         canvas.draw()
 
@@ -161,7 +162,7 @@ class guiApp():
             canvas._tkcanvas.pack(side=Tk.RIGHT)
         return canvas
 
-    def makeEntry(self, row, column, value, text):
+    def make_entry(self, row, column, value, text):
         row = Tk.Frame(self.framebuttons)
         row.pack(side=Tk.TOP, fill=Tk.X)
         label = Tk.Label(row, text=text)
@@ -171,7 +172,7 @@ class guiApp():
         entry.insert(0, value)
         return entry
 
-    def createSubplot(self, figure, title, axes=[0, 800, 0, 800],ax = False):
+    def create_subplot(self, figure, title, axes=[0, 800, 0, 800], ax = False):
         subplot = figure.add_subplot(111)
         subplot.set_title(title)
         subplot.set_xlabel('X')
@@ -182,7 +183,7 @@ class guiApp():
             subplot.set_yticks(np.arange(axes[2], axes[3], 100))
         return subplot
 
-    def createButtons(self, master):
+    def create_buttons(self, master):
         row = Tk.Frame(master)
         row.pack(side=Tk.TOP, fill=Tk.X)
         button = Tk.Button(master=row, text='Start', command=self.start)
@@ -192,54 +193,53 @@ class guiApp():
         button3 = Tk.Button(master=row, text='test', command=self.quit)
         button3.pack(side=Tk.LEFT)
 
-
     def run(self):
         Tk.mainloop()
 
     def start(self):
         self.startCounter +=1
-        crossover_probability = float(self.__crossoverProbabilityEntry.get())
-        mutation_probability = float(self.__mutationProbabilityEntry.get())
-        population_size = int(self.__popSizeEntry.get())
-        route_size = int(self.__routeSizeEntry.get())
-        tournament_size = int(self.__tournamenSelectionSize.get())
-        tournament_select = int(self.__tournamenSelectionSelect.get())
-        selectOption = self._selectOptionVar.get()
-        mutationOptions = self.getMutationMethods()
-        crossoverOptions = self._CrossoverOptionVar.get()
+        crossover_probability = float(self.__crossover_probability_entry.get())
+        mutation_probability = float(self.__mutation_probability_entry.get())
+        population_size = int(self.__pop_size_entry.get())
+        route_size = int(self.__route_size_entry.get())
+        tournament_size = int(self.__tournamen_selection_size.get())
+        tournament_select = int(self.__tournamen_selection_select.get())
+        select_option = self._select_option_var.get()
+        mutation_options = self.get_mutation_methods()
+        crossover_options = self.__crossover_option_var.get()
         self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                      graph=[self.leftSubplot, self.rightSubplot, self.downLeftSubplot],
-                      canvas=[self.leftCanvas, self.rightCanvas,  self.downLeftCanvas, ],
-                      windows=[self.LabelWindowPopulation, self.LabelWindowFirstPopulation],
+                      graph=[self.left_subplot, self.right_subplot, self.down_left_subplot],
+                      canvas=[self.left_canvas, self.right_canvas, self.down_left_canvas, ],
+                      windows=[self.label_window_population, self.label_window_first_population],
                       tournament_size = tournament_size,
                       tournament_select = tournament_select,
                       elitism = self.elitism,
-                      selectOption=selectOption,
-                      mutationOptions=mutationOptions,startCounter=self.startCounter,crossoverOptions=crossoverOptions
+                      selectOption=select_option,
+                      mutationOptions=mutation_options, startCounter=self.startCounter, crossoverOptions=crossover_options
 
                       )
 
         threads = 0
         for i in range(0, int(self.__instantions.get()) - 1):
             x = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                   graph=[self.leftSubplot, self.rightSubplot, self.downRightSubplot, self.downLeftSubplot],
-                   canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas],
-                   windows=[self.LabelWindowPopulation, self.LabelWindowFirstPopulation],
+                   graph=[self.left_subplot, self.right_subplot, self.downRightSubplot, self.down_left_subplot],
+                   canvas=[self.left_canvas, self.right_canvas, self.downRightCanvas, self.down_left_canvas],
+                   windows=[self.label_window_population, self.label_window_first_population],
                    tournament_size = tournament_size,
                    tournament_select = tournament_select,
                    elitism = self.elitism,
-                   selectOption=selectOption,
-                   mutationOptions=mutationOptions,crossoverOptions=crossoverOptions
+                   selectOption=select_option,
+                   mutationOptions=mutation_options, crossoverOptions=crossover_options
                    )
 
-            self.i = threading.Thread(target=self.updateGraph, args=(x,))
+            self.i = threading.Thread(target=self.update_graph, args=(x,))
             threads += 1
             self.i.start()
-        self.new_thread = threading.Thread(target=self.updateGraph, args=(self._GA,))
+        self.new_thread = threading.Thread(target=self.update_graph, args=(self._GA,))
         self.new_thread.start()
         print("Number of threads: {}".format(threads))
 
-    def updateGraph(self, thr):
+    def update_graph(self, thr):
         thr.startGA(n_iterations=int(self.__iterations.get()))
 
     def quit(self):
