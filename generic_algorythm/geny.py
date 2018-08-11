@@ -21,11 +21,14 @@ while True:
     city_list.append({'idx':counter, 'name':temp[0],'x':temp[1],'y':temp[2]})
     counter += 1
 
+
 class city():
     def __str__(self):
         return "%s idx:%s" % (self.name, self.idx)
+
     def __repr__(self):
         return "%s idx:%s" % (self.name, self.idx)
+
     def __init__(self, data, flow_matrix):
         self.name = data['name']
         self.x = int(data['x'])

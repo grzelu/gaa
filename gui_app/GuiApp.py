@@ -1,15 +1,12 @@
 import matplotlib, time, random, threading, sys
-from ga import GA
-from variables import *
-from queue import Queue
+from generic_algorythm.ga import GA
+from vars.var import chromosome_list
+
 
 matplotlib.use('TkAgg')
-import copy
 
-from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from multiprocessing.pool import ThreadPool
 import sys
 
 if sys.version_info[0] < 3:
@@ -211,8 +208,6 @@ class guiApp():
         mutationOptions = self.getMutationMethods()
         crossoverOptions = self._CrossoverOptionVar.get()
         self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                      test="TEST",
-                      randomPopulation=self.randomPopulation,
                       graph=[self.leftSubplot, self.rightSubplot, self.downLeftSubplot],
                       canvas=[self.leftCanvas, self.rightCanvas,  self.downLeftCanvas, ],
                       windows=[self.LabelWindowPopulation, self.LabelWindowFirstPopulation],
@@ -227,7 +222,6 @@ class guiApp():
         threads = 0
         for i in range(0, int(self.__instantions.get()) - 1):
             x = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                   randomPopulation=self.randomPopulation,
                    graph=[self.leftSubplot, self.rightSubplot, self.downRightSubplot, self.downLeftSubplot],
                    canvas=[self.leftCanvas, self.rightCanvas, self.downRightCanvas, self.downLeftCanvas],
                    windows=[self.LabelWindowPopulation, self.LabelWindowFirstPopulation],
