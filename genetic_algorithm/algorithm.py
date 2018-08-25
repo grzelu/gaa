@@ -1,28 +1,34 @@
-from generic_algorythm.geny import population
-from gui_app.GraphManager import GraphManager
+from population.population_class import Population
+from gui_app.graph_manager import GraphManager
 import numpy as np
 import copy
 
 
-class GA(population):
-    def __init__(self, *args, **kwargs):
-        super(GA, self).__init__(*args)
-        self.startCounter = kwargs['startCounter']
-        self.tournament_size = kwargs['tournament_size']
-        self.tournament_select = kwargs['tournament_select']
-        self.select_option = kwargs['selectOption']
-        self._graph = kwargs['graph']
-        self._canvas = kwargs['canvas']
-        self.elitism = kwargs['elitism']
-        self._crossoverOption = kwargs['crossoverOptions']
-        self.mutation_options = kwargs['mutationOptions']
-        self.windows = kwargs['windows']
+class GeneticAlgorithmOptions(object):
+    def __init__(self, arguments):
+        self.tournament_size = arguments['tournament_size']
+        self.tournament_select = arguments['tournament_select']
+        self.elitism = arguments['elitism']
+        self.crossover_options = arguments['crossoverOptions']
+        self.mutation_options = arguments['mutationOptions']
+        self.selection_options = arguments['selectOption']
+        self.gui_graph = arguments['graph']
+        self.gui_canvas = arguments['canvas']
+        self.gui_windows = arguments['windows']
 
+
+class GeneticAlgorithm(Population):
+    def __init__(self, *args, **kwargs):
+        super(GeneticAlgorithm, self).__init__(*args)
+        self.options = GeneticAlgorithmOptions(kwargs)
         self.calc_fitness()
         self.the_best = None
-        self.graphs = {}
-
-        self.gui = GraphManager(kwargs['graph'], kwargs['canvas'], kwargs['windows'])
+        self.__fitness_scores = []
+        self.__meanfitness_scores = []
+        self.__worst_fitness_scores= []
+        self.gui = GraphManager(self.options.gui_graph,
+                                self.options.gui_canvas,
+                                self.options.gui_windows)
 
     def make_population_label_text(self, first_generation=False):
         text = ""
@@ -32,45 +38,44 @@ class GA(population):
             else self.gui.windows.current_population.config(text=text)
 
     def crossover(self):
-        if self._crossoverOption == "Random Points":
+        if self.options.crossover_options == "Random Points":
             self.crossover__random_points()
-        elif self._crossoverOption == "One Point of Crossing":
+        elif self.options.crossover_options == "One Point of Crossing":
             self.crossover_pointOfCross()
-        elif self._crossoverOption == "Two Point of Crossing":
+        elif self.options.crossover_options == "Two Point of Crossing":
             self.crossover_two_pointsof_crossing()
 
     def selection(self):
-        if self.select_option == "Tournament Selection":
-            self.tournament_selection(tournament_size=self.tournament_size, number_to_select=self.tournament_select,
+        if self.options.selection_options == "Tournament Selection":
+            self.tournament_selection(tournament_size=self.options.tournament_size,
+                                      number_to_select=self.options.tournament_select,
                                       choosen=[])
-        elif self.select_option == "Random":
-            self.random_select(number_to_select= self.tournament_select)
-        elif self.select_option == "Best":
-            self.selection__best_half(number_to_select=self.tournament_select)
+        elif self.options.selection_options == "Random":
+            self.random_select(number_to_select=self.options.tournament_select)
+        elif self.options.selection_options == "Best":
+            self.selection__best_half(number_to_select=self.options.tournament_select)
 
-    def startGA(self,n_iterations = 100):
+    def start_ga(self, n_iterations = 100):
         self.make_population_label_text(first_generation=True)
-        self.__fitness_scores = []
-        self.__meanfitness_scores = []
-        self.__worst_fitness_scores= []
+
         for i in range(0, n_iterations):
             self.make_population_label_text()
             self.selection()
             self.crossover()
-            self.mutation(self.mutation_options)
+            self.mutation(self.options.mutation_options)
             self.calc_fitness()
             self.make_population_label_text()
             self.sort_by_fitness()
 
             fit = []
-            if self.elitism == 1:
+            if self.options.elitism == 1:
                 self.sort_by_fitness()
                 self.the_best = self.pop[0] if not self.the_best else self.pop.append(self.the_best)
 
             for y in self.pop:
                 fit.append(round(y.fitness, 3))
             self.__meanfitness_scores.append(np.mean(fit))
-            if len(self._graph) > 0:
+            if len(self.options.gui_graph) > 0:
                 self.graph(i)
 
     def draw_best(self, epoch):

@@ -1,5 +1,5 @@
 import numpy as np
-from generic_algorythm.geny import City
+from genetic_algorithm.geny import City
 
 population_size = 60
 route_size = 8

@@ -9,7 +9,7 @@ class populationListWindow():
 
         self.root = Tk.Tk()
         self.root.geometry("300x700")
-        self.root.wm_title("Population list")
+        self.root.wm_title("Populatiotyuyn list")
         self.frame = Tk.Frame(self.root)
         self.frame.pack()
         self.Label1 = Tk.Label(self.root,text='sdfdsf')

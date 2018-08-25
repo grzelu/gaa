@@ -1,5 +1,5 @@
 import matplotlib, time, random, threading, sys
-from generic_algorythm.ga import GA
+from genetic_algorithm.algorithm import GeneticAlgorithm
 from vars.var import chromosome_list
 
 
@@ -207,40 +207,23 @@ class GuiApp():
         select_option = self._select_option_var.get()
         mutation_options = self.get_mutation_methods()
         crossover_options = self.__crossover_option_var.get()
-        self._GA = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                      graph=[self.left_subplot, self.right_subplot, self.down_left_subplot],
-                      canvas=[self.left_canvas, self.right_canvas, self.down_left_canvas, ],
-                      windows=[self.label_window_population, self.label_window_first_population],
-                      tournament_size = tournament_size,
-                      tournament_select = tournament_select,
-                      elitism = self.elitism,
-                      selectOption=select_option,
-                      mutationOptions=mutation_options, startCounter=self.startCounter, crossoverOptions=crossover_options
+        self._GA = GeneticAlgorithm(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
+                                    graph=[self.left_subplot, self.right_subplot, self.down_left_subplot],
+                                    canvas=[self.left_canvas, self.right_canvas, self.down_left_canvas, ],
+                                    windows=[self.label_window_population, self.label_window_first_population],
+                                    tournament_size = tournament_size,
+                                    tournament_select = tournament_select,
+                                    elitism = self.elitism,
+                                    selectOption=select_option,
+                                    mutationOptions=mutation_options, startCounter=self.startCounter, crossoverOptions=crossover_options
 
-                      )
+                                    )
 
-        threads = 0
-        for i in range(0, int(self.__instantions.get()) - 1):
-            x = GA(chromosome_list, population_size, route_size, crossover_probability, mutation_probability,
-                   graph=[self.left_subplot, self.right_subplot, self.downRightSubplot, self.down_left_subplot],
-                   canvas=[self.left_canvas, self.right_canvas, self.downRightCanvas, self.down_left_canvas],
-                   windows=[self.label_window_population, self.label_window_first_population],
-                   tournament_size = tournament_size,
-                   tournament_select = tournament_select,
-                   elitism = self.elitism,
-                   selectOption=select_option,
-                   mutationOptions=mutation_options, crossoverOptions=crossover_options
-                   )
-
-            self.i = threading.Thread(target=self.update_graph, args=(x,))
-            threads += 1
-            self.i.start()
         self.new_thread = threading.Thread(target=self.update_graph, args=(self._GA,))
         self.new_thread.start()
-        print("Number of threads: {}".format(threads))
 
     def update_graph(self, thr):
-        thr.startGA(n_iterations=int(self.__iterations.get()))
+        thr.start_ga(n_iterations=int(self.__iterations.get()))
 
     def quit(self):
         self.root.destroy()
